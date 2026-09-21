@@ -12,11 +12,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.8.0">
+		<PackageReference Include="IgnoresAccessChecksToGenerator" Version="1.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="NebulaAPI" Version="6.0.0" />
+		<PackageReference Include="NebulaAPI" Version="11.0.0" />
 	</ItemGroup>
 	
 	<ItemGroup>

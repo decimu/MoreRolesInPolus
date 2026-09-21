@@ -100,7 +100,7 @@ public class Autocracy : DefinedRoleTemplate, DefinedSingleAbilityRole<Autocracy
         {
           System.Collections.IEnumerator CoVote()
           {
-            while (MeetingHud.Instance.CurrentState != MeetingHud.VoteStates.NotVoted) yield return null;
+            while (MeetingHud.Instance.CurrentState != MeetingHud.MeetingStates.NotVoted) yield return null;
             MeetingHud.Instance.Confirm(MyPlayer.PlayerId);
           }
           MeetingHud.Instance.StartCoroutine(CoVote().WrapToIl2Cpp());

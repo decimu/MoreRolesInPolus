@@ -93,8 +93,8 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
                     {
                         
                         if (PlayerControl.LocalPlayer.Data.IsDead) return;
-                        if (!(MeetingHud.Instance.state == MeetingHud.VoteStates.Voted || MeetingHud.Instance.state == MeetingHud.VoteStates.NotVoted)) return;
-                        if (!MeetingHudExtension.CanUseAbilityFor(p, true)) return;
+                        if (!(MeetingHud.Instance.state == MeetingHud.MeetingStates.Voted || MeetingHud.Instance.state == MeetingHud.MeetingStates.NotVoted)) return;
+                        if (!MeetingHudExtension.CanUseAbilityForLocal(p, true)) return;
 
                         // “ŒvF„‘ª‰ñ”‚ğ‹L˜^
                         StatsGuess.Progress();

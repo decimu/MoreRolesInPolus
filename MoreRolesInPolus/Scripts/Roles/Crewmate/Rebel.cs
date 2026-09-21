@@ -77,13 +77,13 @@ public class Rebel : DefinedRoleTemplate, DefinedSingleAbilityRole<Rebel.Ability
     void OnCheckWin(PlayerCheckWinEvent Event)
     {
       if (Event.Player != MyPlayer) return;
-      Event.IsWin |= Event.GameEnd == NebulaGameEnd.ImpostorWin;
+      Event.SetWinIf(Event.GameEnd == NebulaGameEnd.ImpostorWin);
     }
 
     void OnBlockWin(PlayerBlockWinEvent Event)
     {
       if (Event.Player != MyPlayer) return;
-      Event.IsBlocked |= Event.GameEnd == NebulaGameEnd.CrewmateWin;
+      Event.SetBlockedIf(Event.GameEnd == NebulaGameEnd.CrewmateWin);
     }
 
     void OnDecorateName(PlayerDecorateNameEvent Event)
