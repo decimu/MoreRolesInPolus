@@ -123,6 +123,7 @@
 "settings.mrip.dialog.title" : "MRIP設定"
 "settings.mrip.dialog.ok" : "OK"
 "settings.mrip.button.name" : "MRIP設定"
+"settings.mrip.button.backToNoS" : "← NoS設定"
 "settings.mrip.loading" : "バージョン情報を読み込み中..."
 "settings.mrip.status.current" : "使用中"
 "settings.mrip.button.get" : "取得"

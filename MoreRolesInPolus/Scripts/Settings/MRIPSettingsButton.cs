@@ -1,8 +1,8 @@
 ﻿/**
  * @file MRIPSettingsButton.cs
- * @brief Nebulaの設定画面（「ネブラ」ボタン）にMRIPボタンを追加 + 起動時自動更新チェック
+ * @brief NoSのバージョン画面にMRIP設定ボタンを追加 + 起動時自動更新チェック
  * @details
- * - MainMenuManager.Awake後にNebulaScreenへボタンを追加
+ * - NoSのバージョン画面の左カラム（カテゴリボタン列）末尾にボタンを追加
  * - 起動時に自動更新チェックを実行
  * - バージョン選択UI（Nebula風）を表示
  */
@@ -97,7 +97,8 @@ public static class MRIPMenuClearScreenPatch
 /// </summary>
 public static class MRIPMainMenuPatch
 {
-    private static bool ButtonAdded = false;
+    private const string VersionsScreenButtonName = "MRIPSettingsButton";
+    private static GameObject? versionsScreenButton = null;
     
     /// <summary>
     /// MRIPバージョン選択画面
@@ -141,196 +142,98 @@ public static class MRIPMainMenuPatch
         // 自動更新チェックは無効化
         // MRIPAutoUpdater.OnMainMenuLoaded();
         
-        // NebulaScreenへのボタン追加を継続的に監視
-        // NebulaScreenは「ネブラ」ボタンを押した時に表示されるので、アクティブになったタイミングで追加
-        mainMenu.StartCoroutine(MonitorNebulaScreen(mainMenu).WrapToIl2Cpp());
+        mainMenu.StartCoroutine(MonitorVersionsScreen(mainMenu).WrapToIl2Cpp());
     }
-    
+
     /// <summary>
-    /// NebulaScreenを継続的に監視するコルーチン
+    /// NoSのバージョン画面が開かれたらMRIP設定ボタンを追加するコルーチン
     /// </summary>
-    private static System.Collections.IEnumerator MonitorNebulaScreen(MainMenuManager mainMenu)
+    private static System.Collections.IEnumerator MonitorVersionsScreen(MainMenuManager mainMenu)
     {
-        int frameCount = 0;
-        const int maxFrames = 36000; // 約10分（60fps × 600秒）
-        bool wasNebulaScreenActive = false;
-        
-        // メインメニューにいる間ずっと監視
-        while (frameCount < maxFrames)
+        bool wasActive = false;
+
+        // ロビーに入ったら終了
+        while (LobbyBehaviour.Instance == null)
         {
             yield return null;
-            frameCount++;
-            
-            GameObject? nebulaScreen = MainMenuSetUpPatch.NebulaScreen;
-            bool isNebulaScreenActive = nebulaScreen != null && nebulaScreen.activeInHierarchy;
-            
-            // NebulaScreenが見つかって、アクティブで、まだボタンを追加していない場合
-            if (isNebulaScreenActive && !ButtonAdded)
+
+            // バージョン画面は初回表示時に生成され、以降はSetActiveで使い回される
+            GameObject? versionsScreen = MainMenuSetUpPatch.VersionsScreen;
+            bool isActive = versionsScreen && versionsScreen!.activeInHierarchy;
+
+            if (isActive && !wasActive && !versionsScreenButton)
             {
-                // 既にボタンが追加されているかチェック
-                Transform? existingButton = nebulaScreen!.transform.Find("MRIPSettingsButton");
-                if (existingButton == null)
-                {
-                    AddButtonToNebulaScreen(nebulaScreen, mainMenu);
-                    ButtonAdded = true;
-                }
-                else
-                {
-                    // 既存のボタンがある（以前追加された）
-                    ButtonAdded = true;
-                }
+                versionsScreenButton = AddButtonToVersionsScreen(versionsScreen!, mainMenu);
             }
-            
-            // NebulaScreenが閉じられたらリセット（次回開いた時に再追加できるように）
-            if (wasNebulaScreenActive && !isNebulaScreenActive)
-            {
-                ButtonAdded = false;
-            }
-            
-            wasNebulaScreenActive = isNebulaScreenActive;
-            
-            // ロビーに入ったら終了（AmongUs.GameOptions.GameOptionsManagerが初期化されている）
-            if (LobbyBehaviour.Instance != null)
-            {
-                ButtonAdded = false;
-                yield break;
-            }
+
+            wasActive = isActive;
         }
-        
     }
     
     /// <summary>
-    /// NebulaScreenにMRIPボタンを追加
+    /// バージョン画面の左カラム（カテゴリボタン列）の末尾にMRIP設定ボタンを追加
     /// </summary>
-    private static void AddButtonToNebulaScreen(GameObject nebulaScreen, MainMenuManager mainMenu)
+    private static GameObject? AddButtonToVersionsScreen(GameObject versionsScreen, MainMenuManager mainMenu)
     {
         try
         {
-            
-            // 既存のボタンを探す
-            PassiveButton? templateButton = null;
-            int buttonCount = 0;
-            
-            for (int i = 0; i < nebulaScreen.transform.childCount; i++)
+            // NoSのカテゴリボタンは名前やコンポーネントで区別できないため、表示テキストで特定する
+            string customLabel = Language.Translate("version.category.custom");
+            string unknownLabel = Language.Translate("version.category.unknown");
+            Transform? customButton = null;
+            Transform? unknownButton = null;
+            foreach (var button in versionsScreen.GetComponentsInChildren<PassiveButton>(true))
             {
-                var child = nebulaScreen.transform.GetChild(i);
-                var pb = child.GetComponent<PassiveButton>();
-                if (pb != null && child.name.StartsWith("Account_CTA"))
+                string? label = button.GetComponentInChildren<TextMeshPro>(true)?.text;
+                if (label == customLabel) customButton = button.transform;
+                else if (label == unknownLabel) unknownButton = button.transform;
+            }
+            if (customButton == null || unknownButton == null) return null;
+            
+            int sortingOrder = unknownButton.GetComponent<SpriteRenderer>().sortingOrder;
+            GameObject? created = null;
+            new MetaWidgetOld.Button(() => OpenMRIPScreen(mainMenu), new TextAttributeOld(TextAttributeOld.BoldAttr) { Size = new Virial.Compat.Vector2(0.95f, 0.28f) })
+            {
+                RawText = Language.Translate("settings.mrip.button.name").Replace("*", ""),
+                PostBuilder = (button, renderer, _) =>
                 {
-                    if (templateButton == null)
-                    {
-                        templateButton = pb;
-                    }
-                    buttonCount++;
+                    created = button.gameObject;
+                    renderer.sortingOrder = sortingOrder;
                 }
-            }
+            }.Generate(unknownButton.parent.gameObject, new(0f, 0f), out _);
+            if (created == null) return null;
             
-            if (templateButton == null)
-            {
-                return;
-            }
-            
-            
-            // テンプレートボタンの位置情報
-            Virial.Compat.Vector3 templatePos = templateButton.transform.localPosition;
-            
-            // ボタン間隔を計算（2列構成）
-            float spacingX = 0f;
-            float spacingY = 0f;
-            
-            if (buttonCount >= 2)
-            {
-                // 2番目のボタンとの差でX間隔を計算
-                for (int i = 0; i < nebulaScreen.transform.childCount; i++)
-                {
-                    var child = nebulaScreen.transform.GetChild(i);
-                    if (child.GetComponent<PassiveButton>() != null && child.name.StartsWith("Account_CTA") && child.gameObject != templateButton.gameObject)
-                    {
-                        spacingX = child.localPosition.x - templatePos.x;
-                        break;
-                    }
-                }
-            }
-            
-            if (buttonCount >= 3)
-            {
-                // 3番目のボタンとの差でY間隔を計算
-                int count = 0;
-                for (int i = 0; i < nebulaScreen.transform.childCount; i++)
-                {
-                    var child = nebulaScreen.transform.GetChild(i);
-                    if (child.GetComponent<PassiveButton>() != null && child.name.StartsWith("Account_CTA"))
-                    {
-                        count++;
-                        if (count == 3)
-                        {
-                            spacingY = child.localPosition.y - templatePos.y;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            
-            // ボタンを複製
-            GameObject mripButtonObj = UnityEngine.Object.Instantiate(templateButton.gameObject, nebulaScreen.transform);
-            mripButtonObj.name = "MRIPSettingsButton";
-            
-            // 新しい位置を計算（最後の行の次の位置）
-            int row = buttonCount / 2;
-            int col = buttonCount % 2;
-            float newX = templatePos.x + (spacingX * col);
-            float newY = templatePos.y + (spacingY * row);
-            
-            mripButtonObj.transform.localPosition = new Virial.Compat.Vector3(newX, newY, templatePos.z);
-            
-            
-            // TextTranslatorTMPを無効化（翻訳で上書きされないように）
-            var translators = mripButtonObj.GetComponentsInChildren<TextTranslatorTMP>(true);
-            foreach (var translator in translators)
-            {
-                translator.enabled = false;
-            }
-            
-            // テキストを変更
-            var textMeshPros = mripButtonObj.GetComponentsInChildren<TextMeshPro>(true);
-            foreach (var tmp in textMeshPros)
-            {
-                tmp.text = Language.Translate("settings.mrip.button.name").Replace("*", "");
-            }
-            
-            // クリックイベントを設定
-            PassiveButton? mripButton = mripButtonObj.GetComponent<PassiveButton>();
-            if (mripButton != null)
-            {
-                mripButton.OnClick = new Button.ButtonClickedEvent();
-                mripButton.OnClick.AddListener((System.Action)delegate
-                {
-                    VanillaAsset.PlaySelectSE();
-                    mainMenu.ResetScreen();
-                    
-                    // MRIPVersionsScreenを作成または表示
-                    if (MRIPVersionsScreen == null)
-                    {
-                        CreateVersionsScreen(mainMenu);
-                    }
-                    MRIPVersionsScreen?.SetActive(true);
-                    mainMenu.screenTint.enabled = true;
-                });
-            }
-            
-            // アクティブにする
-            mripButtonObj.SetActive(true);
-            
-            // デバッグ情報
-            var sr = mripButtonObj.GetComponentInChildren<SpriteRenderer>(true);
-            
+            created.name = VersionsScreenButtonName;
+            created.transform.position = unknownButton.position + (unknownButton.position - customButton.position);
+            return created;
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
+            return null;
         }
     }
     
+    /// <summary>
+    /// MRIP設定画面を開く
+    /// </summary>
+    private static void OpenMRIPScreen(MainMenuManager mainMenu)
+    {
+        mainMenu.ResetScreen();
+        if (MRIPVersionsScreen == null) CreateVersionsScreen(mainMenu);
+        MRIPVersionsScreen?.SetActive(true);
+        mainMenu.screenTint.enabled = true;
+    }
+    
+    /// <summary>
+    /// NoSのバージョン画面に戻る
+    /// </summary>
+    private static void BackToNoSScreen(MainMenuManager mainMenu)
+    {
+        mainMenu.ResetScreen();
+        MainMenuSetUpPatch.VersionsScreen?.SetActive(true);
+        mainMenu.screenTint.enabled = true;
+    }
+
     /// <summary>
     /// バージョン選択画面を作成（Nebula風 - NebulaScreen内に配置）
     /// </summary>
@@ -389,7 +292,13 @@ public static class MRIPMainMenuPatch
                     RawText = Language.Translate(MRIPModUpdater.CategoryNames[(int)category]).Replace("*", "")
                 });
             }
-            
+
+            menuWidget.Append(new MetaWidgetOld.Button(() => BackToNoSScreen(mainMenu),
+                new TextAttributeOld(TextAttributeOld.BoldAttr) { Size = new Virial.Compat.Vector2(0.95f, 0.28f) })
+            {
+                RawText = Language.Translate("settings.mrip.button.backToNoS").Replace("*", "")
+            });
+
             // 左側メニュー + 右側スクロールビュー（ParallelWidgetOld）
             staticWidget.Append(new ParallelWidgetOld(
                 new System.Tuple<IMetaWidgetOld, float>(new MetaWidgetOld.HorizonalMargin(0.1f), 0.1f),
