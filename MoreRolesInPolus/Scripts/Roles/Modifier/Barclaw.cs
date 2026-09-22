@@ -1,45 +1,82 @@
-﻿using MoreRolesInPolus.Scripts.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MoreRolesInPolus.Scripts.Utils;
 using static Rewired.UI.ControlMapper.ControlMapper;
 
 namespace MoreRolesInPolus.Roles.Modifier;
 
 public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableModifier
 {
+  private Barclaw()
+    : base(
+      "barclaw",
+      "barclaw",
+      new(118, 118, 118),
+      [
+        numOfDeadRequired,
+        numOfMaxButton,
+        enableAfterSecondTurn,
+        showMeetingInFlash,
+        meetingDelayOption,
+        meetingDelayDispersionOption,
+        AllowGhostMeeting,
+      ]
+    ) { }
 
+  private static readonly IntegerConfiguration numOfDeadRequired =
+    NebulaAPI.Configurations.Configuration("options.role.barclaw.numOfDeadRequired", (1, 10), 2);
+  private static readonly IntegerConfiguration numOfMaxButton =
+    NebulaAPI.Configurations.Configuration("options.role.barclaw.numOfMaxButton", (1, 10), 2);
+  private static readonly BoolConfiguration enableAfterSecondTurn =
+    NebulaAPI.Configurations.Configuration("options.role.barclaw.enableAfterSecondTurn", false);
+  private static readonly BoolConfiguration showMeetingInFlash =
+    NebulaAPI.Configurations.Configuration("options.role.barclaw.showMeetingInFlash", false);
+  private static readonly FloatConfiguration meetingDelayOption =
+    NebulaAPI.Configurations.Configuration(
+      "options.role.barclaw.meetingDelayOption",
+      (0f, 5f, 0.5f),
+      2f,
+      FloatConfigurationDecorator.Second
+    );
+  private static readonly FloatConfiguration meetingDelayDispersionOption =
+    NebulaAPI.Configurations.Configuration(
+      "options.role.barclaw.meetingDelayDispersionOption",
+      (0f, 10f, 0.25f),
+      3f,
+      FloatConfigurationDecorator.Second
+    );
 
-  private Barclaw() : base("barclaw", "barclaw", new(118, 118, 118), [numOfDeadRequired, numOfMaxButton, enableAfterSecondTurn, showMeetingInFlash, meetingDelayOption, meetingDelayDispersionOption, AllowGhostMeeting])
-  {
-
-  }
-  static private readonly IntegerConfiguration numOfDeadRequired = NebulaAPI.Configurations.Configuration("options.role.barclaw.numOfDeadRequired", (1, 10), 2);
-  static private readonly IntegerConfiguration numOfMaxButton = NebulaAPI.Configurations.Configuration("options.role.barclaw.numOfMaxButton", (1, 10), 2);
-  static private readonly BoolConfiguration enableAfterSecondTurn = NebulaAPI.Configurations.Configuration("options.role.barclaw.enableAfterSecondTurn", false);
-  static private readonly BoolConfiguration showMeetingInFlash = NebulaAPI.Configurations.Configuration("options.role.barclaw.showMeetingInFlash", false);
-  static private readonly FloatConfiguration meetingDelayOption = NebulaAPI.Configurations.Configuration("options.role.barclaw.meetingDelayOption", (0f, 5f, 0.5f), 2f, FloatConfigurationDecorator.Second);
-  static private readonly FloatConfiguration meetingDelayDispersionOption = NebulaAPI.Configurations.Configuration("options.role.barclaw.meetingDelayDispersionOption", (0f, 10f, 0.25f), 3f, FloatConfigurationDecorator.Second);
   //死んでいても緊急会議が発動するか
-  static private readonly BoolConfiguration AllowGhostMeeting = NebulaAPI.Configurations.Configuration("options.role.barclaw.allowGhostMeeting", false);
-  static public Barclaw MyRole = new Barclaw();
-  RuntimeModifier RuntimeAssignableGenerator<RuntimeModifier>.CreateInstance(GamePlayer player, int[] arguments) => new Instance(player);
+  private static readonly BoolConfiguration AllowGhostMeeting =
+    NebulaAPI.Configurations.Configuration("options.role.barclaw.allowGhostMeeting", false);
+  public static Barclaw MyRole = new Barclaw();
 
+  RuntimeModifier RuntimeAssignableGenerator<RuntimeModifier>.CreateInstance(
+    GamePlayer player,
+    int[] arguments
+  ) => new Instance(player);
 
   public class Instance : RuntimeAssignableTemplate, RuntimeModifier
   {
     DefinedModifier RuntimeModifier.Modifier => MyRole;
 
-    bool RuntimeAssignable.CanBeAwareAssignment => NebulaGameManager.Instance?.CanSeeAllInfo ?? false;
-    public Instance(GamePlayer player) : base(player)
-    {
-    }
+    bool RuntimeAssignable.CanBeAwareAssignment =>
+      NebulaGameManager.Instance?.CanSeeAllInfo ?? false;
+
+    public Instance(GamePlayer player)
+      : base(player) { }
 
     void RuntimeAssignable.OnActivated() { }
 
-    void RuntimeAssignable.DecorateNameConstantly(ref string name, bool canSeeAllInfo, bool inEndScene)
+    void RuntimeAssignable.DecorateNameConstantly(
+      ref string name,
+      bool canSeeAllInfo,
+      bool inEndScene
+    )
     {
-      if (canSeeAllInfo || inEndScene) name += MyRole.GetRoleIconTagSmall();
+      if (canSeeAllInfo || inEndScene)
+        name += MyRole.GetRoleIconTagSmall();
     }
 
     bool myDead = false;
@@ -51,7 +88,8 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
     [Local]
     void OnKillPlayer(PlayerKillPlayerEvent ev)
     {
-      if (!MyPlayer.IsAlive) return;
+      if (!MyPlayer.IsAlive)
+        return;
       if (AmOwner)
       {
         if (MyPlayer.IsDead)
@@ -64,26 +102,32 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
 
         if (numOfKillCount == numOfDeadRequired && !myDead && numOfMaxButton > numOfButtonCount)
         {
-          if(enableAfterSecondTurn && nowTurn < 2) return;
+          if (enableAfterSecondTurn && nowTurn < 2)
+            return;
 
-          if(showMeetingInFlash) AmongUsUtil.PlayQuickFlash(MyRole.UnityColor);
+          if (showMeetingInFlash)
+            AmongUsUtil.PlayQuickFlash(MyRole.UnityColor);
 
-          float t = Virial.Utilities.Mathn.Max(0.1f, meetingDelayOption) + meetingDelayDispersionOption * (float)System.Random.Shared.NextDouble();
-          
+          float t =
+            Virial.Utilities.Mathn.Max(0.1f, meetingDelayOption)
+            + meetingDelayDispersionOption * (float)System.Random.Shared.NextDouble();
+
           NebulaManager.Instance.StartCoroutine(WaitAndCallCoroutine(t).WrapToIl2Cpp());
-          numOfButtonCount ++;
-
+          numOfButtonCount++;
         }
       }
     }
+
     // t秒待ってからミーティングを呼ぶコルーチン
     System.Collections.IEnumerator WaitAndCallCoroutine(float t)
     {
       yield return new UnityEngine.WaitForSeconds(t);
 
       // 待機後に条件がまだ満たされていれば実行
-      if (!AmOwner) yield break;
-      if ((myDead || MyPlayer.IsDead) && !AllowGhostMeeting) yield break;
+      if (!AmOwner)
+        yield break;
+      if ((myDead || MyPlayer.IsDead) && !AllowGhostMeeting)
+        yield break;
 
       CallMeetingHelper.CallMeeting(MyPlayer);
     }
@@ -105,7 +149,6 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
       }
     }
 
-
     void OnMeetingEnd(MeetingEndEvent ev)
     {
       if (AmOwner)
@@ -113,9 +156,7 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
         numOfKillCount = 0;
         deadPlayer.Clear();
       }
-
     }
-
 
     void OnMeetingPreStart(MeetingPreStartEvent ev)
     {

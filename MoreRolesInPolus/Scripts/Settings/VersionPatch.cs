@@ -1,23 +1,23 @@
 ﻿/**
  * @file VersionPatch.cs
  * @brief タイトル画面とロビー画面のバージョン表示にMRIPのバージョン情報を追加
- * @details 
+ * @details
  * - VersionShower.Start の Postfix でタイトル画面のバージョンテキストを書き換える
  * - LobbyBehaviour.Start の Postfix でロビー画面のバージョンテキストを書き換える
  * - NebulaPreprocessでHarmonyパッチを適用
- * 
+ *
  * ロビー画面ではVersionShowerは使われず、NoSGUITextで独自のバージョン表示が作成される
  */
 
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using BepInEx.Unity.IL2CPP.Utils.Collections;
 using HarmonyLib;
 using Nebula.Modules;
 using Nebula.Utilities;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using Virial.Runtime;
-using UnityEngine;
 using TMPro; // TextMeshProのために必要
-using BepInEx.Unity.IL2CPP.Utils.Collections;
+using UnityEngine;
+using Virial.Runtime;
 
 namespace Toa.MoreRolesInPolus.Scripts.Settings;
 
@@ -28,7 +28,7 @@ namespace Toa.MoreRolesInPolus.Scripts.Settings;
 public static class MRIPHarmonySetUp
 {
   private static Harmony? HarmonyInstance;
-  
+
   /// <summary>
   /// プリプロセス時にHarmonyパッチを適用
   /// </summary>
@@ -37,33 +37,33 @@ public static class MRIPHarmonySetUp
   {
     try
     {
-      
       HarmonyInstance = new Harmony("MoreRolesInPolus.VersionPatch");
-      
+
       // VersionShower.StartにPostfixパッチを適用（タイトル画面）
       var versionShowerMethod = typeof(VersionShower).GetMethod("Start");
-      var versionShowerPostfix = typeof(MRIPVersionPatch).GetMethod(nameof(MRIPVersionPatch.VersionShowerStartPostfix));
-      
+      var versionShowerPostfix = typeof(MRIPVersionPatch).GetMethod(
+        nameof(MRIPVersionPatch.VersionShowerStartPostfix)
+      );
+
       // Priorityを低く設定して、Nebulaのパッチの後に実行されるようにする
       var harmonyMethod = new HarmonyMethod(versionShowerPostfix);
       harmonyMethod.priority = Priority.Low;
-      
+
       HarmonyInstance.Patch(versionShowerMethod, postfix: harmonyMethod);
-      
+
       // LobbyBehaviour.StartにPostfixパッチを適用（ロビー画面）
       var lobbyStartMethod = typeof(LobbyBehaviour).GetMethod("Start");
-      var lobbyPostfix = typeof(MRIPVersionPatch).GetMethod(nameof(MRIPVersionPatch.LobbyStartPostfix));
-      
+      var lobbyPostfix = typeof(MRIPVersionPatch).GetMethod(
+        nameof(MRIPVersionPatch.LobbyStartPostfix)
+      );
+
       // Priorityを低く設定して、Nebulaのパッチの後に実行されるようにする
       var lobbyHarmonyMethod = new HarmonyMethod(lobbyPostfix);
       lobbyHarmonyMethod.priority = Priority.Low;
-      
+
       HarmonyInstance.Patch(lobbyStartMethod, postfix: lobbyHarmonyMethod);
-      
     }
-    catch (System.Exception)
-    {
-    }
+    catch (System.Exception) { }
   }
 }
 
@@ -74,12 +74,12 @@ public static class MRIPVersionPatch
 {
   private static readonly HashSet<VersionShower> _updatedVersionShowers = new();
   private static readonly HashSet<TextMeshPro> _updatedLobbyTexts = new();
-  
+
   /// <summary>
   /// 安定版（例: "v3.1"）のバージョン表記パターン
   /// </summary>
   private static readonly Regex StableVersionPattern = new(@"v\d+\.\d+", RegexOptions.Compiled);
-  
+
   /// <summary>
   /// テキストがNebulaのバージョンテキストかどうかを判定する
   /// スナップショット版（"Snapshot"を含む）または安定版（"v3.1"等のパターン）を検出
@@ -90,26 +90,25 @@ public static class MRIPVersionPatch
   {
     return text.Contains("Snapshot") || StableVersionPattern.IsMatch(text);
   }
-  
+
   /// <summary>
   /// VersionShower.Start実行後に呼ばれるPostfixパッチ（タイトル画面）
   /// </summary>
   /// <param name="__instance">VersionShowerのインスタンス</param>
   public static void VersionShowerStartPostfix(VersionShower __instance)
   {
-    if (_updatedVersionShowers.Contains(__instance)) return;
+    if (_updatedVersionShowers.Contains(__instance))
+      return;
 
     try
     {
       UpdateVersionShowerText(__instance);
-      
+
       // テキストが上書きされる可能性があるので、しばらく監視するコルーチンを開始
       // VersionShower自体がMonoBehaviourなので直接StartCoroutineを使用
       __instance.StartCoroutine(MonitorVersionShowerText(__instance).WrapToIl2Cpp());
     }
-    catch (System.Exception)
-    {
-    }
+    catch (System.Exception) { }
   }
 
   /// <summary>
@@ -120,15 +119,12 @@ public static class MRIPVersionPatch
   {
     try
     {
-      
       // Nebulaのパッチでテキストが作成されるまで少し待つ必要があるのでコルーチンで処理
       __instance.StartCoroutine(FindAndUpdateLobbyVersionText().WrapToIl2Cpp());
     }
-    catch (System.Exception)
-    {
-    }
+    catch (System.Exception) { }
   }
-  
+
   /// <summary>
   /// VersionShowerのテキストを更新する
   /// </summary>
@@ -140,43 +136,39 @@ public static class MRIPVersionPatch
       if (versionShower?.text?.text != null)
       {
         string currentText = versionShower.text.text;
-        
+
         // Nebulaのバージョン文字列が含まれていることを確認し、MRIPのクレジットがまだない場合のみ追加
         if (currentText.Contains("NoS") && !currentText.Contains(MRIPInfo.ShortName))
         {
           versionShower.text.text = currentText + MRIPInfo.GetVersionString();
           _updatedVersionShowers.Add(versionShower);
         }
-        else if (!currentText.Contains("NoS"))
-        {
-        }
+        else if (!currentText.Contains("NoS")) { }
       }
-      else
-      {
-      }
+      else { }
     }
-    catch (System.Exception)
-    {
-    }
+    catch (System.Exception) { }
   }
 
   /// <summary>
   /// VersionShowerのテキストが上書きされていないか継続的に監視するコルーチン
   /// </summary>
-  private static System.Collections.IEnumerator MonitorVersionShowerText(VersionShower versionShower)
+  private static System.Collections.IEnumerator MonitorVersionShowerText(
+    VersionShower versionShower
+  )
   {
     // 最大600フレーム（約10秒）監視
     for (int i = 0; i < 600; i++)
     {
       yield return null;
-      
+
       if (versionShower == null || versionShower.text == null)
       {
         yield break;
       }
 
       string currentText = versionShower.text.text;
-      
+
       // Nebulaが含まれているが、MRIPが含まれていない場合、再度追加
       if (currentText.Contains("NoS") && !currentText.Contains(MRIPInfo.ShortName))
       {
@@ -185,13 +177,12 @@ public static class MRIPVersionPatch
       }
     }
   }
-  
+
   /// <summary>
   /// ロビー画面のバージョンテキストを検索して更新するコルーチン
   /// </summary>
   private static System.Collections.IEnumerator FindAndUpdateLobbyVersionText()
   {
-    
     // 最大600フレーム（約10秒）待機して監視
     for (int i = 0; i < 600; i++)
     {
@@ -208,7 +199,7 @@ public static class MRIPVersionPatch
           if (textComponent != null && textComponent.text != null)
           {
             string currentText = textComponent.text;
-            
+
             // バージョンテキスト（Snapshot版 or 安定版 "v3.1" 等）を特定
             if (IsVersionText(currentText) && !currentText.Contains(MRIPInfo.ShortName))
             {
@@ -227,6 +218,5 @@ public static class MRIPVersionPatch
         }
       }
     }
-    
   }
 }
