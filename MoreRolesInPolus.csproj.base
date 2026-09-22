@@ -39,6 +39,9 @@
 		<AddonRoot>$(MSBuildProjectDirectory)\MoreRolesInPolus</AddonRoot>
 		<!-- Debugビルド時のAmong Us起動回数（デフォルト：1） -->
 		<LaunchCount Condition="'$(LaunchCount)' == ''">1</LaunchCount>
+		<!-- Addonsフォルダに置くzipのファイル名（Debug/Releaseで一致させ、相互削除にも使う） -->
+		<DebugZipFileName>[junjun]MoreRolesInPolus.zip</DebugZipFileName>
+		<ReleaseZipFileName>MoreRolesInPolus.zip</ReleaseZipFileName>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -54,21 +57,24 @@
 	<Target Name="DebugBuild" AfterTargets="Build" Condition="'$(Configuration)'=='Debug'">
 		<PropertyGroup>
 			<TempZipDir>$(MSBuildProjectDirectory)\temp_zip</TempZipDir>
-			<ZipFileName>[junjun]MoreRolesInPolus.zip</ZipFileName>
+			<ZipFileName>$(DebugZipFileName)</ZipFileName>
 			<SteamAddonsPath>$(AmongUs)\Addons</SteamAddonsPath>
 		</PropertyGroup>
-		
+
+		<!-- Releaseビルドが残した同一Addon ID(addon.meta)のzipを削除（重複ロードでどちらかが無視されるのを防ぐ） -->
+		<Delete Files="$(SteamAddonsPath)\$(ReleaseZipFileName)" Condition="Exists('$(SteamAddonsPath)\$(ReleaseZipFileName)')" />
+
 		<RemoveDir Directories="$(TempZipDir)" Condition="Exists('$(TempZipDir)')" />
 		<MakeDir Directories="$(TempZipDir)" />
-		
+
 		<ItemGroup>
 			<AddonFiles Include="$(AddonRoot)\**\*.*" />
 		</ItemGroup>
-		
+
 		<Copy SourceFiles="@(AddonFiles)" DestinationFolder="$(TempZipDir)\%(RecursiveDir)" />
 		<ZipDirectory SourceDirectory="$(TempZipDir)" DestinationFile="$(SteamAddonsPath)\$(ZipFileName)" Overwrite="true" />
 		<RemoveDir Directories="$(TempZipDir)" />
-		
+
 		<Message Text="Debugビルド完了: $(SteamAddonsPath)\$(ZipFileName)" Importance="high" />
 		
 		<!-- Among Us を起動（LaunchCount回、4秒間隔） -->
@@ -80,21 +86,24 @@
 	<Target Name="ReleaseBuild" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
 		<PropertyGroup>
 			<TempZipDir>$(MSBuildProjectDirectory)\temp_zip</TempZipDir>
-			<ZipFileName>MoreRolesInPolus.zip</ZipFileName>
+			<ZipFileName>$(ReleaseZipFileName)</ZipFileName>
 			<SteamAddonsPath>$(AmongUs)\Addons</SteamAddonsPath>
 			<BinReleasePath>$(MSBuildProjectDirectory)\bin\Release</BinReleasePath>
 		</PropertyGroup>
-		
+
+		<!-- Debugビルドが残した同一Addon ID(addon.meta)のzipを削除（重複ロードでどちらかが無視されるのを防ぐ） -->
+		<Delete Files="$(SteamAddonsPath)\$(DebugZipFileName)" Condition="Exists('$(SteamAddonsPath)\$(DebugZipFileName)')" />
+
 		<RemoveDir Directories="$(TempZipDir)" Condition="Exists('$(TempZipDir)')" />
 		<MakeDir Directories="$(TempZipDir)" />
 		<MakeDir Directories="$(BinReleasePath)" Condition="!Exists('$(BinReleasePath)')" />
-		
+
 		<ItemGroup>
 			<AddonFiles Include="$(AddonRoot)\**\*.*" />
 		</ItemGroup>
-		
+
 		<Copy SourceFiles="@(AddonFiles)" DestinationFolder="$(TempZipDir)\%(RecursiveDir)" />
-		
+
 		<!-- bin\Releaseにzip -->
 		<ZipDirectory SourceDirectory="$(TempZipDir)" DestinationFile="$(BinReleasePath)\$(ZipFileName)" Overwrite="true" />
 		<!-- NoS_devにzip -->

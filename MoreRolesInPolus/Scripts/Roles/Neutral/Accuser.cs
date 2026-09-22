@@ -1,185 +1,286 @@
-using Nebula.Roles.Complex;
+ï»¿using Nebula.Roles.Complex;
 using Virial.Runtime;
+
 namespace MoreRolesInPolus.Roles.Neutral;
 
 [NebulaPreprocess(PreprocessPhase.BuildAssignmentTypes)]
 internal class AccuserTeamInfo
 {
-    static public RoleTeam? MyTeam { get; private set; }
-    static public GameEnd? End { get; private set; }
-    static public Virial.Color TeamColor { get; private set; }
-    static private void Preprocess(NebulaPreprocessor preprocessor)
-    {
-        TeamColor = new(120, 60, 180);
-        MyTeam = preprocessor.CreateTeam("teams.accuser", TeamColor, TeamRevealType.OnlyMe);
-        End = preprocessor.CreateEnd("accuser", TeamColor);
-    }
+  public static RoleTeam? MyTeam { get; private set; }
+  public static GameEnd? End { get; private set; }
+  public static Virial.Color TeamColor { get; private set; }
+
+  private static void Preprocess(NebulaPreprocessor preprocessor)
+  {
+    TeamColor = new(120, 60, 180);
+    MyTeam = preprocessor.CreateTeam("teams.accuser", TeamColor, TeamRevealType.OnlyMe);
+    End = preprocessor.CreateEnd("accuser", TeamColor);
+  }
 }
 
-// Accuseri”­Òj
-// „‘ª‚ğ¬Œ÷‚³‚¹‚ÄŸ—˜‚ğ–Úw‚·‘æOw‰c–ğE
-// ‰ï‹c’†ˆÈŠO‰É‚È–ğE‚É‚È‚Á‚Ä‚µ‚Ü‚Á‚Ä‚é‚©‚çd–‚ğ—^‚¦‚½‚¢
-// ¡l‚¦‚Ä‚é‚Ì‚Æ‚µ‚Ä‚Í‰½‚©‚ğ‚µ‚È‚¢‚ÆƒQƒbƒT[‚Ì‹Ê‚ğƒQƒbƒg‚Å‚«‚È‚¢‚Æ‚¢‚¤‚à‚Ì
-// —á‚¦‚Î¶‚«‚Ä‚él‘Sˆõ‚Éˆê‰ñG‚ê‚é(ƒN[ƒ‹ƒ^ƒCƒ€‚È‚Ç‚Í‚È‚µ‚½‚¾G‚ê‚é‚¾‚¯‚à‚µ‚­‚ÍƒNƒŠƒbƒN‚·‚é‚¾‚¯)
+// Accuserï¼ˆå‘Šç™ºè€…ï¼‰
+// æ¨æ¸¬ã‚’æˆåŠŸã•ã›ã¦å‹åˆ©ã‚’ç›®æŒ‡ã™ç¬¬ä¸‰é™£å–¶å½¹è·
+// ä¼šè­°ä¸­ä»¥å¤–æš‡ãªå½¹è·ã«ãªã£ã¦ã—ã¾ã£ã¦ã‚‹ã‹ã‚‰ä»•äº‹ã‚’ä¸ãˆãŸã„
+// ä»Šè€ƒãˆã¦ã‚‹ã®ã¨ã—ã¦ã¯ä½•ã‹ã‚’ã—ãªã„ã¨ã‚²ãƒƒã‚µãƒ¼ã®ç‰ã‚’ã‚²ãƒƒãƒˆã§ããªã„ã¨ã„ã†ã‚‚ã®
+// ä¾‹ãˆã°ç”Ÿãã¦ã‚‹äººå…¨å“¡ã«ä¸€å›è§¦ã‚Œã‚‹(ã‚¯ãƒ¼ãƒ«ã‚¿ã‚¤ãƒ ãªã©ã¯ãªã—ãŸã è§¦ã‚Œã‚‹ã ã‘ã‚‚ã—ãã¯ã‚¯ãƒªãƒƒã‚¯ã™ã‚‹ã ã‘)
 internal class Accuser : DefinedRoleTemplate, DefinedRole
 {
-    // ‰½‰ñ„‘ª¬Œ÷‚µ‚½‚çŸ‚¿‚©
-    static private IntegerConfiguration NumOfGuessToWinOption = NebulaAPI.Configurations.Configuration("options.role.accuser.NumOfGuessToWinOption", (1, 10), 2);
-    // ˆê‰ñ‚Ì‰ï‹c‚Å‰½‰ñ„‘ª‚Å‚«‚é‚©
-    static private IntegerConfiguration NumOfGuessPerMeetingOption = NebulaAPI.Configurations.Configuration("options.role.accuser.numOfGuessPerMeeting", (1, 10), 1);
-    //‹–—eƒ~ƒX‰ñ”
-    static private IntegerConfiguration NumOfMissAllowedOption = NebulaAPI.Configurations.Configuration("options.role.accuser.numOfMissAllowed", (0, 20), 1);
-    //ƒ~ƒX‚µ‚½‚Æ‚«‚É‚»‚Ì‰ï‹c’†‚Í„‘ª‚Å‚«‚È‚­‚·‚é‚©
-    static private BoolConfiguration DisableGuessAfterMissOption = NebulaAPI.Configurations.Configuration("options.role.accuser.disableGuessAfterMiss", false);
-    static public Accuser MyRole = new Accuser();
-    // “ŒvF„‘ª‚µ‚½‰ñ”
-    static private GameStatsEntry StatsGuess = NebulaAPI.CreateStatsEntry("stats.accuser.guess", GameStatsCategory.Roles, MyRole);
+  // ä½•å›æ¨æ¸¬æˆåŠŸã—ãŸã‚‰å‹ã¡ã‹
+  private static IntegerConfiguration NumOfGuessToWinOption =
+    NebulaAPI.Configurations.Configuration(
+      "options.role.accuser.NumOfGuessToWinOption",
+      (1, 10),
+      2
+    );
 
-    private Accuser() : base("accuser", AccuserTeamInfo.TeamColor, RoleCategory.NeutralRole, AccuserTeamInfo.MyTeam!, [NumOfGuessToWinOption, NumOfGuessPerMeetingOption, NumOfMissAllowedOption, DisableGuessAfterMissOption])
+  // ä¸€å›ã®ä¼šè­°ã§ä½•å›æ¨æ¸¬ã§ãã‚‹ã‹
+  private static IntegerConfiguration NumOfGuessPerMeetingOption =
+    NebulaAPI.Configurations.Configuration("options.role.accuser.numOfGuessPerMeeting", (1, 10), 1);
+
+  //è¨±å®¹ãƒŸã‚¹å›æ•°
+  private static IntegerConfiguration NumOfMissAllowedOption =
+    NebulaAPI.Configurations.Configuration("options.role.accuser.numOfMissAllowed", (0, 20), 1);
+
+  //ãƒŸã‚¹ã—ãŸã¨ãã«ãã®ä¼šè­°ä¸­ã¯æ¨æ¸¬ã§ããªãã™ã‚‹ã‹
+  private static BoolConfiguration DisableGuessAfterMissOption =
+    NebulaAPI.Configurations.Configuration("options.role.accuser.disableGuessAfterMiss", false);
+  public static Accuser MyRole = new Accuser();
+
+  // çµ±è¨ˆï¼šæ¨æ¸¬ã—ãŸå›æ•°
+  private static GameStatsEntry StatsGuess = NebulaAPI.CreateStatsEntry(
+    "stats.accuser.guess",
+    GameStatsCategory.Roles,
+    MyRole
+  );
+
+  private Accuser()
+    : base(
+      "accuser",
+      AccuserTeamInfo.TeamColor,
+      RoleCategory.NeutralRole,
+      AccuserTeamInfo.MyTeam!,
+      [
+        NumOfGuessToWinOption,
+        NumOfGuessPerMeetingOption,
+        NumOfMissAllowedOption,
+        DisableGuessAfterMissOption,
+      ]
+    ) { }
+
+  Image? DefinedAssignable.IconImage => (Guesser.MyEvilRole as DefinedRole).IconImage;
+  private static readonly Image researchSprite = NebulaAPI
+    .AddonAsset.GetResource(string.Format("Crewmate/Researcher/ResearchButton.png"))!
+    .AsImage(115f)!;
+
+  RuntimeRole RuntimeAssignableGenerator<RuntimeRole>.CreateInstance(
+    GamePlayer player,
+    int[] arguments
+  ) => new Instance(player, arguments);
+
+  public class Instance : RuntimeAssignableTemplate, RuntimeRole
+  {
+    DefinedRole RuntimeRole.Role => MyRole;
+
+    // ã‚²ãƒ¼ãƒ å…¨ä½“ã§æ®‹ã£ã¦ã„ã‚‹æ¨æ¸¬å›æ•°
+    private int leftGuess;
+
+    // å‹åˆ©ã«å¿…è¦ãªæ¨æ¸¬æˆåŠŸå›æ•°ï¼ˆåˆæœŸå€¤)
+    private int totalGuesses;
+
+    //ãƒŸã‚¹è¨±å®¹å›æ•°
+    private int leftMiss;
+
+    //ã“ã®ä¼šè­°ã§ãƒŸã‚¹ã—ãŸã‹
+    private bool missedThisMeeting = false;
+
+    // æ¨æ¸¬ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å‚ç…§
+    private MetaScreen? lastGuesserWindow = null;
+
+    public Instance(GamePlayer player, int[] arguments)
+      : base(player)
     {
+      totalGuesses = arguments.Length >= 1 ? arguments[0] : NumOfGuessToWinOption;
+      leftGuess = totalGuesses;
+      leftMiss = arguments.Length >= 2 ? arguments[1] : NumOfMissAllowedOption;
     }
 
-    Image? DefinedAssignable.IconImage => (Guesser.MyEvilRole as DefinedRole).IconImage;
-    static private readonly Image researchSprite = NebulaAPI.AddonAsset.GetResource(string.Format("Crewmate/Researcher/ResearchButton.png"))!.AsImage(115f)!;
-    RuntimeRole RuntimeAssignableGenerator<RuntimeRole>.CreateInstance(GamePlayer player, int[] arguments) => new Instance(player, arguments);
-
-    public class Instance : RuntimeAssignableTemplate, RuntimeRole
+    public Instance(GamePlayer myPlayer)
+      : base(myPlayer)
     {
-        DefinedRole RuntimeRole.Role => MyRole;
-        // ƒQ[ƒ€‘S‘Ì‚Åc‚Á‚Ä‚¢‚é„‘ª‰ñ”
-        private int leftGuess;
-        // Ÿ—˜‚É•K—v‚È„‘ª¬Œ÷‰ñ”i‰Šú’l)
-        private int totalGuesses;
-        //ƒ~ƒX‹–—e‰ñ”
-        private int leftMiss;
-        //‚±‚Ì‰ï‹c‚Åƒ~ƒX‚µ‚½‚©
-        private bool missedThisMeeting = false;
-        // „‘ªƒEƒBƒ“ƒhƒE‚ÌQÆ
-        private MetaScreen? lastGuesserWindow = null;
+      totalGuesses = NumOfGuessToWinOption;
+      leftGuess = totalGuesses;
+      leftMiss = NumOfMissAllowedOption;
+    }
 
-        public Instance(GamePlayer player, int[] arguments) : base(player)
-        {
-            totalGuesses = arguments.Length >= 1 ? arguments[0] : NumOfGuessToWinOption;
-            leftGuess = totalGuesses;
-            leftMiss = arguments.Length >= 2 ? arguments[1] : NumOfMissAllowedOption;
-        }
+    //
+    int[]? RuntimeAssignable.RoleArguments => new int[] { totalGuesses, leftMiss };
 
-        public Instance(GamePlayer myPlayer) : base(myPlayer)
-        {
-            totalGuesses = NumOfGuessToWinOption;
-            leftGuess = totalGuesses;
-            leftMiss = NumOfMissAllowedOption;
-        }
+    // ä¼šè­°é–‹å§‹æ™‚ï¼šã‚²ãƒƒã‚µãƒ¼ã®èƒ½åŠ›ã‚’ä»˜ä¸
+    [Local]
+    void OnMeetingStart(MeetingStartEvent ev)
+    {
+      missedThisMeeting = false;
+      // ã“ã®ä¼šè­°ã§æ®‹ã£ã¦ã„ã‚‹æ¨æ¸¬å›æ•°
+      int leftGuessPerMeeting = NumOfGuessPerMeetingOption;
 
-        // 
-        int[]? RuntimeAssignable.RoleArguments => new int[] { totalGuesses, leftMiss};
+      // å„ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«æ¨æ¸¬ãƒœã‚¿ãƒ³ã‚’è¿½åŠ 
 
-        // ‰ï‹cŠJnFƒQƒbƒT[‚Ì”\—Í‚ğ•t—^
-        [Local]
-        void OnMeetingStart(MeetingStartEvent ev)
-        {
-            missedThisMeeting = false;
-            // ‚±‚Ì‰ï‹c‚Åc‚Á‚Ä‚¢‚é„‘ª‰ñ”
-            int leftGuessPerMeeting = NumOfGuessPerMeetingOption;
-
-            // ŠeƒvƒŒƒCƒ„[‚É„‘ªƒ{ƒ^ƒ“‚ğ’Ç‰Á
-            
-            NebulaAPI.CurrentGame?.GetModule<MeetingPlayerButtonManager>()?.RegisterMeetingAction(
-                new(MeetingPlayerButtonManager.Icons.AsLoader(0),
-                state => {
-                    var p = state.MyPlayer;
-                    // „‘ªƒEƒBƒ“ƒhƒE‚ğŠJ‚­
-                    lastGuesserWindow = OpenGuessWindow(leftGuessPerMeeting, leftGuess, leftMiss, (r) =>
-                    {
-                        
-                        if (PlayerControl.LocalPlayer.Data.IsDead) return;
-                        if (!(MeetingHud.Instance.state == MeetingHud.MeetingStates.Voted || MeetingHud.Instance.state == MeetingHud.MeetingStates.NotVoted)) return;
-                        if (!MeetingHudExtension.CanUseAbilityForLocal(p, true)) return;
-
-                        // “ŒvF„‘ª‰ñ”‚ğ‹L˜^
-                        StatsGuess.Progress();
-                        // „‘ª‚ª³‚µ‚¢‚©ƒ`ƒFƒbƒN
-                        bool isCorrect = p.Role.CheckGuessAbility(r);
-
-                        if (isCorrect)
-                        {
-                            if (!missedThisMeeting)
-                            {
-
-                                NebulaAPI.CurrentGame?.LocalPlayer.MurderPlayer(p, PlayerState.Guessed, EventDetail.Guess, KillParameter.MeetingKill, KillCondition.BothAlive);
-                                leftGuess--;
-                                leftGuessPerMeeting--;
-                            }
-                        }
-                            else
-                        {
-
-                            if(leftMiss <= 0) 
-                            {
-                                NebulaAPI.CurrentGame?.LocalPlayer.MurderPlayer(NebulaAPI.CurrentGame.LocalPlayer, PlayerState.Misguessed, EventDetail.Missed, KillParameter.MeetingKill, KillCondition.BothAlive);
-                            }
-                            else
-                            {
-                                leftMiss--;
-                                if (DisableGuessAfterMissOption)
-                                {
-                                    missedThisMeeting = true;
-                                }
-                            }
-                        }
-                        // ƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é
-                        if (lastGuesserWindow) lastGuesserWindow!.CloseScreen();
-                        lastGuesserWindow = null;
-                    });
-                },
-                // ƒ{ƒ^ƒ“‚ğ•\¦‚·‚éğŒ
-                p => !p.MyPlayer.IsDead && !p.MyPlayer.AmOwner && leftGuess > 0 && leftGuessPerMeeting > 0 && !missedThisMeeting && !PlayerControl.LocalPlayer.Data.IsDead && GameOperatorManager.Instance!.Run(new PlayerCanGuessPlayerLocalEvent(NebulaAPI.CurrentGame!.LocalPlayer, p.MyPlayer, true)).CanGuess
-            ));
-        }
-
-        // „‘ªƒEƒBƒ“ƒhƒE‚ğŠJ‚­
-        private MetaScreen OpenGuessWindow(int leftGuessPerMeeting, int leftGuess,int leftMiss, Action<DefinedRole> onSelected)
-        {
-            // ‰ï‹c‚²‚Æ‚Ì§ŒÀ‚ª‚ ‚éê‡‚Í "1 (3)" ‚Ì‚æ‚¤‚É•\¦
-            string leftStr = leftGuessPerMeeting < leftGuess
-                ? $"{leftGuessPerMeeting} ({leftGuess})"
-                : leftGuess.ToString();
-
-            // c‚èƒ~ƒX‰ñ”‚ğ•\¦•¶š—ñ‚É’Ç‰Á
-            string header = Language.Translate("role.guesser.leftGuess") + " : " + leftStr
-                          + "  " + Language.Translate("role.accuser.leftMiss") + " : " + leftMiss;
-
-            return MeetingRoleSelectWindow.OpenRoleSelectWindow(null, r => r.CanBeGuess, GamePlayer.LocalPlayer?.FeelBeTrueCrewmate ?? false, header, onSelected);
-        }
-
-        // ©•ª‚ª€–S‚µ‚½FƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é
-        [Local, OnlyMyPlayer]
-        void OnDead(PlayerDieEvent ev)
-        {
-            if (lastGuesserWindow) lastGuesserWindow!.CloseScreen();
-            lastGuesserWindow = null;
-        }
-
-        // ƒvƒŒƒCƒ„[‚ªEŠQ‚³‚ê‚½FŸ—˜ğŒ‚ğƒ`ƒFƒbƒN
-        [Local, OnlyMyPlayer]
-        void OnGuessPlayer(PlayerKillPlayerEvent ev)
-        {
-            // „‘ª¬Œ÷‚É‚æ‚éEŠQ‚Ìê‡
-            if (ev.Dead.PlayerState == PlayerStates.Guessed)
+      NebulaAPI
+        .CurrentGame?.GetModule<MeetingPlayerButtonManager>()
+        ?.RegisterMeetingAction(
+          new(
+            MeetingPlayerButtonManager.Icons.AsLoader(0),
+            state =>
             {
-                // •K—v‚È„‘ª¬Œ÷‰ñ”‚É’B‚µ‚½‚çŸ—˜
-                if (leftGuess <= 0)
+              var p = state.MyPlayer;
+              // æ¨æ¸¬ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‹ã
+              lastGuesserWindow = OpenGuessWindow(
+                leftGuessPerMeeting,
+                leftGuess,
+                leftMiss,
+                (r) =>
                 {
-                    var bitmask = BitMasks.AsPlayer();
-                    bitmask.Add(MyPlayer);
+                  if (PlayerControl.LocalPlayer.Data.IsDead)
+                    return;
+                  if (
+                    !(
+                      MeetingHud.Instance.state == MeetingHud.MeetingStates.Voted
+                      || MeetingHud.Instance.state == MeetingHud.MeetingStates.NotVoted
+                    )
+                  )
+                    return;
+                  if (!MeetingHudExtension.CanUseAbilityForLocal(p, true))
+                    return;
 
-                    NebulaAPI.CurrentGame?.RequestGameEnd(AccuserTeamInfo.End!, bitmask);
+                  // çµ±è¨ˆï¼šæ¨æ¸¬å›æ•°ã‚’è¨˜éŒ²
+                  StatsGuess.Progress();
+                  // æ¨æ¸¬ãŒæ­£ã—ã„ã‹ãƒã‚§ãƒƒã‚¯
+                  bool isCorrect = p.Role.CheckGuessAbility(r);
+
+                  if (isCorrect)
+                  {
+                    if (!missedThisMeeting)
+                    {
+                      NebulaAPI.CurrentGame?.LocalPlayer.MurderPlayer(
+                        p,
+                        PlayerState.Guessed,
+                        EventDetail.Guess,
+                        KillParameter.MeetingKill,
+                        KillCondition.BothAlive
+                      );
+                      leftGuess--;
+                      leftGuessPerMeeting--;
+                    }
+                  }
+                  else
+                  {
+                    if (leftMiss <= 0)
+                    {
+                      NebulaAPI.CurrentGame?.LocalPlayer.MurderPlayer(
+                        NebulaAPI.CurrentGame.LocalPlayer,
+                        PlayerState.Misguessed,
+                        EventDetail.Missed,
+                        KillParameter.MeetingKill,
+                        KillCondition.BothAlive
+                      );
+                    }
+                    else
+                    {
+                      leftMiss--;
+                      if (DisableGuessAfterMissOption)
+                      {
+                        missedThisMeeting = true;
+                      }
+                    }
+                  }
+                  // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ã‚‹
+                  if (lastGuesserWindow)
+                    lastGuesserWindow!.CloseScreen();
+                  lastGuesserWindow = null;
                 }
-            }
-        }
-
-        public void OnActivated()
-        {
-        }
+              );
+            },
+            // ãƒœã‚¿ãƒ³ã‚’è¡¨ç¤ºã™ã‚‹æ¡ä»¶
+            p =>
+              !p.MyPlayer.IsDead
+              && !p.MyPlayer.AmOwner
+              && leftGuess > 0
+              && leftGuessPerMeeting > 0
+              && !missedThisMeeting
+              && !PlayerControl.LocalPlayer.Data.IsDead
+              && GameOperatorManager
+                .Instance!.Run(
+                  new PlayerCanGuessPlayerLocalEvent(
+                    NebulaAPI.CurrentGame!.LocalPlayer,
+                    p.MyPlayer,
+                    true
+                  )
+                )
+                .CanGuess
+          )
+        );
     }
+
+    // æ¨æ¸¬ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‹ã
+    private MetaScreen OpenGuessWindow(
+      int leftGuessPerMeeting,
+      int leftGuess,
+      int leftMiss,
+      Action<DefinedRole> onSelected
+    )
+    {
+      // ä¼šè­°ã”ã¨ã®åˆ¶é™ãŒã‚ã‚‹å ´åˆã¯ "1 (3)" ã®ã‚ˆã†ã«è¡¨ç¤º
+      string leftStr =
+        leftGuessPerMeeting < leftGuess
+          ? $"{leftGuessPerMeeting} ({leftGuess})"
+          : leftGuess.ToString();
+
+      // æ®‹ã‚ŠãƒŸã‚¹å›æ•°ã‚’è¡¨ç¤ºæ–‡å­—åˆ—ã«è¿½åŠ 
+      string header =
+        Language.Translate("role.guesser.leftGuess")
+        + " : "
+        + leftStr
+        + "  "
+        + Language.Translate("role.accuser.leftMiss")
+        + " : "
+        + leftMiss;
+
+      return MeetingRoleSelectWindow.OpenRoleSelectWindow(
+        null,
+        r => r.CanBeGuess,
+        GamePlayer.LocalPlayer?.FeelBeTrueCrewmate ?? false,
+        header,
+        onSelected
+      );
+    }
+
+    // è‡ªåˆ†ãŒæ­»äº¡ã—ãŸæ™‚ï¼šã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ã‚‹
+    [Local, OnlyMyPlayer]
+    void OnDead(PlayerDieEvent ev)
+    {
+      if (lastGuesserWindow)
+        lastGuesserWindow!.CloseScreen();
+      lastGuesserWindow = null;
+    }
+
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ®ºå®³ã•ã‚ŒãŸæ™‚ï¼šå‹åˆ©æ¡ä»¶ã‚’ãƒã‚§ãƒƒã‚¯
+    [Local, OnlyMyPlayer]
+    void OnGuessPlayer(PlayerKillPlayerEvent ev)
+    {
+      // æ¨æ¸¬æˆåŠŸã«ã‚ˆã‚‹æ®ºå®³ã®å ´åˆ
+      if (ev.Dead.PlayerState == PlayerStates.Guessed)
+      {
+        // å¿…è¦ãªæ¨æ¸¬æˆåŠŸå›æ•°ã«é”ã—ãŸã‚‰å‹åˆ©
+        if (leftGuess <= 0)
+        {
+          var bitmask = BitMasks.AsPlayer();
+          bitmask.Add(MyPlayer);
+
+          NebulaAPI.CurrentGame?.RequestGameEnd(AccuserTeamInfo.End!, bitmask);
+        }
+      }
+    }
+
+    public void OnActivated() { }
+  }
 }

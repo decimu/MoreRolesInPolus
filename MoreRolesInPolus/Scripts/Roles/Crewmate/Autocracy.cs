@@ -1,40 +1,51 @@
-using MoreRolesInPolus.Scripts.Core;
+﻿using MoreRolesInPolus.Scripts.Core;
 
 namespace MoreRolesInPolus.Roles.Crewmate;
 
-public class Autocracy : DefinedRoleTemplate, DefinedSingleAbilityRole<Autocracy.Ability>, DefinedRole, HasCitation, IAssignableDocument
+public class Autocracy
+  : DefinedRoleTemplate,
+    DefinedSingleAbilityRole<Autocracy.Ability>,
+    DefinedRole,
+    HasCitation,
+    IAssignableDocument
 {
-  private Autocracy() : base(
-    "autocracy",
-    new(84, 77, 44),
-    RoleCategory.CrewmateRole,
-    NebulaTeams.CrewmateTeam,
-    [],
-    othersAssignments: () => [
-      new((_, PlayerId) => (Rebel.MyRole, [PlayerId]), RoleCategory.CrewmateRole)
-    ]
-  ) { }
+  private Autocracy()
+    : base(
+      "autocracy",
+      new(84, 77, 44),
+      RoleCategory.CrewmateRole,
+      NebulaTeams.CrewmateTeam,
+      [],
+      othersAssignments: () =>
+        [new((_, PlayerId) => (Rebel.MyRole, [PlayerId]), RoleCategory.CrewmateRole)]
+    ) { }
 
   Image? DefinedAssignable.IconImage => iconImage;
-  static readonly Image iconImage = NebulaAPI.AddonAsset.GetResource(string.Format("Crewmate/Autocracy/Autocracy.png"))!.AsImage()!;
+  static readonly Image iconImage = NebulaAPI
+    .AddonAsset.GetResource(string.Format("Crewmate/Autocracy/Autocracy.png"))!
+    .AsImage()!;
 
   Citation? HasCitation.Citation => AddonCitations.JinroJudgement;
 
-  public Ability CreateAbility(GamePlayer player, int[] arguments) => new Ability(player, arguments.GetAsBool(0));
+  public Ability CreateAbility(GamePlayer player, int[] arguments) =>
+    new Ability(player, arguments.GetAsBool(0));
 
   AbilityAssignmentStatus DefinedRole.AssignmentStatus => AbilityAssignmentStatus.CanLoadToMadmate;
 
-  static public Autocracy MyRole = new();
+  public static Autocracy MyRole = new();
   DefinedRole[] DefinedRole.AdditionalRoles => [Rebel.MyRole];
 
   bool IAssignableDocument.HasTips => true;
   bool IAssignableDocument.HasAbility => true;
+
   IEnumerable<AssignableDocumentImage> IAssignableDocument.GetDocumentImages()
   {
     yield return new(autocracySprite, "role.autocracy.ability.autocracy");
   }
 
-  static readonly Image autocracySprite = NebulaAPI.AddonAsset.GetResource(string.Format("Crewmate/Autocracy/autocracyButton.png"))!.AsImage(115f)!;
+  static readonly Image autocracySprite = NebulaAPI
+    .AddonAsset.GetResource(string.Format("Crewmate/Autocracy/autocracyButton.png"))!
+    .AsImage(115f)!;
 
   [NebulaRPCHolder]
   public class Ability : AbstractPlayerUsurpableAbility, IPlayerAbility
@@ -43,12 +54,11 @@ public class Autocracy : DefinedRoleTemplate, DefinedSingleAbilityRole<Autocracy
 
     bool InvokedSpecialMeeting = false;
 
-    public Ability(GamePlayer player, bool isUsurped) : base(player, isUsurped)
+    public Ability(GamePlayer player, bool isUsurped)
+      : base(player, isUsurped)
     {
-
       if (AmOwner)
       {
-
         var autocracyButton = NebulaAPI.Modules.AbilityButton(
           this,
           MyPlayer,
@@ -63,7 +73,6 @@ public class Autocracy : DefinedRoleTemplate, DefinedSingleAbilityRole<Autocracy
           InvokeSpecialMeeting();
           button.Break();
         };
-
       }
     }
 
@@ -85,22 +94,27 @@ public class Autocracy : DefinedRoleTemplate, DefinedSingleAbilityRole<Autocracy
     void OnMeeting(MeetingStartEvent ev)
     {
       var meeting = NebulaAPI.CurrentGame?.CurrentMeeting;
-      if (meeting == null) return;
-      if (meeting.InvokedBy == MyPlayer && meeting.ReportedDeadBody == null && InvokedSpecialMeeting)
+      if (meeting == null)
+        return;
+      if (
+        meeting.InvokedBy == MyPlayer
+        && meeting.ReportedDeadBody == null
+        && InvokedSpecialMeeting
+      )
       {
         ev.CanVote = GamePlayer.LocalPlayer!.Role.Role == Autocracy.MyRole;
         MeetingHudExtension.ExileEvenIfTie = true;
 
         bool HasAliveRebel = NebulaGameManager.Instance!.AllPlayerInfo.Any(Player =>
-          !Player.IsDead &&
-          Player.Role.Role == Rebel.MyRole
+          !Player.IsDead && Player.Role.Role == Rebel.MyRole
         );
 
         if (AmOwner && HasAliveRebel)
         {
           System.Collections.IEnumerator CoVote()
           {
-            while (MeetingHud.Instance.CurrentState != MeetingHud.MeetingStates.NotVoted) yield return null;
+            while (MeetingHud.Instance.CurrentState != MeetingHud.MeetingStates.NotVoted)
+              yield return null;
             MeetingHud.Instance.Confirm(MyPlayer.PlayerId);
           }
           MeetingHud.Instance.StartCoroutine(CoVote().WrapToIl2Cpp());
@@ -125,7 +139,8 @@ public class Autocracy : DefinedRoleTemplate, DefinedSingleAbilityRole<Autocracy
 
     void OnCanGuess(PlayerCanGuessPlayerLocalEvent Ev)
     {
-      if (!InvokedSpecialMeeting) return;
+      if (!InvokedSpecialMeeting)
+        return;
       Ev.CanGuess = false;
     }
 
