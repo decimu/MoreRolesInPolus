@@ -9,6 +9,8 @@
 		<OutputType>Library</OutputType>
 		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 		<EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+		<!-- MonoMod.Utils が同じ属性を公開しているため、生成を省略して重複（CS0436）を避ける -->
+		<IgnoresAccessChecksToOmitAttributeDefinition>true</IgnoresAccessChecksToOmitAttributeDefinition>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -20,7 +22,8 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<Reference Include="$(AmongUs)\BepInEx\core\*.dll" />
+		<!-- dobby.dll はネイティブ DLL なので参照から除外（MSB3246） -->
+		<Reference Include="$(AmongUs)\BepInEx\core\*.dll" Exclude="$(AmongUs)\BepInEx\core\dobby.dll" />
 		<Reference Include="$(AmongUs)\BepInEx\interop\*.dll" />
 		<Reference Include="Nebula">
 			<HintPath>$(AmongUs)\BepInEx\nebula\Nebula.dll</HintPath>
@@ -69,8 +72,8 @@
 		<Message Text="Debugビルド完了: $(SteamAddonsPath)\$(ZipFileName)" Importance="high" />
 		
 		<!-- Among Us を起動（LaunchCount回、4秒間隔） -->
-		<Exec Command="powershell -Command &quot;1..$(LaunchCount) | ForEach-Object { Start-Process '$(AmongUs)\Among Us.exe'; if ($_ -lt $(LaunchCount)) { Start-Sleep -Seconds 4 } }&quot;" />
-		<Message Text="Among Us を $(LaunchCount) 回起動しました（4秒間隔）" Importance="high" />
+		<Exec Condition="$(LaunchCount) &gt; 0" Command="powershell -Command &quot;1..$(LaunchCount) | ForEach-Object { Start-Process '$(AmongUs)\Among Us.exe'; if ($_ -lt $(LaunchCount)) { Start-Sleep -Seconds 4 } }&quot;" />
+		<Message Condition="$(LaunchCount) &gt; 0" Text="Among Us を $(LaunchCount) 回起動しました（4秒間隔）" Importance="high" />
 	</Target>
 
 	<!-- Release：bin\Release + NoS_dev（配布用にプレフィックスなし） -->

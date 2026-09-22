@@ -106,7 +106,18 @@ Windows の環境変数に `AmongUs` を追加：
 
 ### ビルド方法
 
-Visual Studio で `Ctrl+Shift+B` でビルド。
+Visual Studio・VS Code のどちらでも `Ctrl+Shift+B` でビルドできます。
+
+- **Visual Studio**: 構成（Debug / Release）を選んで `Ctrl+Shift+B`
+- **VS Code**: `Ctrl+Shift+B` で Debug ビルドが始まり、起動する Among Us の数（0〜6）を選べます
+  - Release は **ターミナル → タスクの実行…** から「Release ビルド」を選択
+  - タスクは `.vscode/tasks.json` に定義されています（.NET SDK が必要）
+- **Cursor**: `Ctrl+Shift+B` はブラウザに割り当てられているため、次のどちらかで実行
+  - コマンドパレット（`Ctrl+Shift+P`）→「Tasks: Run Build Task」
+  - キーを割り当てる: コマンドパレット →「Preferences: Open Keyboard Shortcuts (JSON)」を開き、以下を追加（例: F7）
+    ```json
+    { "key": "f7", "command": "workbench.action.tasks.build" }
+    ```
 
 - **Debug**: `Among Us NoS_dev\Addons\[Toa]MoreRolesInPolus.zip` に出力（開発用）
   - ビルド後、自動で Among Us が起動します
@@ -121,7 +132,7 @@ Visual Studio で `Ctrl+Shift+B` でビルド。
 #### ビルドエラー: 「Among Us のパスが見つかりません」
 
 - 環境変数 `AmongUs` が正しく設定されているか確認
-- Visual Studio を**再起動**（環境変数の変更を反映）
+- Visual Studio / VS Code を**再起動**（環境変数の変更を反映）
 
 #### API 参照エラー（`GetRoomName` など）
 
