@@ -6,7 +6,7 @@ namespace MoreRolesInPolus.Roles.Imposter
     [NebulaPreprocess(PreprocessPhase.PostFixStructure)]
     public static class HarmonyPatchSetUp
     {
-        public static Harmony harmony;
+        public static Harmony? harmony;
         public static void Preprocess(NebulaPreprocessor preprocessor)
         {
             harmony = new Harmony("ToaPatch");
@@ -288,7 +288,7 @@ namespace MoreRolesInPolus.Roles.Imposter
                 {
                     // チェインシフト直後など、他クライアントでオブジェクト生成が遅れるケースに備えて
                     // 保留中IDの復元を定期的に再試行する。
-                    GameOperatorManager.Instance.Subscribe<GameUpdateEvent>(_ =>
+                    GameOperatorManager.Instance!.Subscribe<GameUpdateEvent>(_ =>
                     {
                         TryRestoreJacksFromPendingIds();
                     }, this);
@@ -609,7 +609,7 @@ namespace MoreRolesInPolus.Roles.Imposter
                         if (ev.Player.AmOwner)
                         {
                             var currentJacks = globalJacks ?? localJacks;
-                            Jack targetVent = currentJacks.FirstOrDefault(obj => ev.Vent.Id == obj.vent.Id);
+                            Jack? targetVent = currentJacks.FirstOrDefault(obj => ev.Vent.Id == obj.vent.Id);
                             if (targetVent != null)
                             {
                                 RpcPlayJackVentAnimation.Invoke(targetVent.ObjectId);

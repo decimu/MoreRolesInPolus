@@ -35,7 +35,7 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
     // 統計：推測した回数
     static private GameStatsEntry StatsGuess = NebulaAPI.CreateStatsEntry("stats.accuser.guess", GameStatsCategory.Roles, MyRole);
 
-    private Accuser() : base("accuser", AccuserTeamInfo.TeamColor, RoleCategory.NeutralRole, AccuserTeamInfo.MyTeam, [NumOfGuessToWinOption, NumOfGuessPerMeetingOption, NumOfMissAllowedOption, DisableGuessAfterMissOption])
+    private Accuser() : base("accuser", AccuserTeamInfo.TeamColor, RoleCategory.NeutralRole, AccuserTeamInfo.MyTeam!, [NumOfGuessToWinOption, NumOfGuessPerMeetingOption, NumOfMissAllowedOption, DisableGuessAfterMissOption])
     {
     }
 
@@ -128,7 +128,7 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
                             }
                         }
                         // ウィンドウを閉じる
-                        if (lastGuesserWindow) lastGuesserWindow.CloseScreen();
+                        if (lastGuesserWindow) lastGuesserWindow!.CloseScreen();
                         lastGuesserWindow = null;
                     });
                 },
@@ -156,7 +156,7 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
         [Local, OnlyMyPlayer]
         void OnDead(PlayerDieEvent ev)
         {
-            if (lastGuesserWindow) lastGuesserWindow.CloseScreen();
+            if (lastGuesserWindow) lastGuesserWindow!.CloseScreen();
             lastGuesserWindow = null;
         }
 
@@ -173,7 +173,7 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
                     var bitmask = BitMasks.AsPlayer();
                     bitmask.Add(MyPlayer);
 
-                    NebulaAPI.CurrentGame.RequestGameEnd(AccuserTeamInfo.End, bitmask);
+                    NebulaAPI.CurrentGame?.RequestGameEnd(AccuserTeamInfo.End!, bitmask);
                 }
             }
         }

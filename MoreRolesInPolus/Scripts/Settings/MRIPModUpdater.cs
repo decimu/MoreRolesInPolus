@@ -82,12 +82,12 @@ public static class MRIPModUpdater
                 {
                     File.Delete(filesToDelete[i]);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }
@@ -290,7 +290,7 @@ public static class MRIPModUpdater
                         currentAddon.Dispose();
                         System.Threading.Thread.Sleep(100);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
                 }
@@ -346,7 +346,7 @@ public static class MRIPModUpdater
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -493,7 +493,7 @@ public static class MRIPModUpdater
             
             response.Dispose();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             MaybeNoMorePages = true;
         }

@@ -264,6 +264,13 @@ public static class MRIPMainMenuPatch
                 Alignment = TMPro.TextAlignmentOptions.Center
             };
             CategoryAttribute.EditFontSize(1.2f, 0.6f, 1.2f);
+
+            TextAttributeOld ErrorDetailAttribute = new TextAttributeOld(TextAttributeOld.BoldAttr)
+            {
+                FontMaterial = VanillaAsset.StandardMaskedFontMaterial,
+                Size = new Virial.Compat.Vector2(3f, 0.55f),
+                Alignment = TMPro.TextAlignmentOptions.Left
+            };
             
             TextAttributeOld ButtonAttribute = new TextAttributeOld(TextAttributeOld.BoldAttr)
             {
@@ -279,25 +286,29 @@ public static class MRIPMainMenuPatch
             // 静的ウィジェット（全体レイアウト）
             MetaWidgetOld staticWidget = new MetaWidgetOld();
             
-            // 左側: カテゴリボタン（Nebulaと同じ方式）
-            MetaWidgetOld menuWidget = new MetaWidgetOld();
+            // 左側: 戻るボタン + カテゴリボタン（行の高さはNebulaと同じ0.6）
+            var menuButtons = new List<MetaWidgetOld.Button>
+            {
+                new MetaWidgetOld.Button(() => BackToNoSScreen(mainMenu),
+                    new TextAttributeOld(TextAttributeOld.BoldAttr) { Size = new Virial.Compat.Vector2(0.95f, 0.28f) })
+                {
+                    RawText = Language.Translate("settings.mrip.button.backToNoS").Replace("*", "")
+                }
+            };
             
             // 各カテゴリのボタンを追加
             foreach (MRIPModUpdater.ReleaseCategory category in System.Enum.GetValues(typeof(MRIPModUpdater.ReleaseCategory)))
             {
                 var cat = category; // クロージャ用
-                menuWidget.Append(new MetaWidgetOld.Button(() => UpdateContents(cat), 
+                menuButtons.Add(new MetaWidgetOld.Button(() => UpdateContents(cat), 
                     new TextAttributeOld(TextAttributeOld.BoldAttr) { Size = new Virial.Compat.Vector2(0.95f, 0.28f) }) 
                 { 
                     RawText = Language.Translate(MRIPModUpdater.CategoryNames[(int)category]).Replace("*", "")
                 });
             }
 
-            menuWidget.Append(new MetaWidgetOld.Button(() => BackToNoSScreen(mainMenu),
-                new TextAttributeOld(TextAttributeOld.BoldAttr) { Size = new Virial.Compat.Vector2(0.95f, 0.28f) })
-            {
-                RawText = Language.Translate("settings.mrip.button.backToNoS").Replace("*", "")
-            });
+            MetaWidgetOld menuWidget = new MetaWidgetOld();
+            menuWidget.Append(menuButtons, button => button, 1, -1, 0, 0.6f);
 
             // 左側メニュー + 右側スクロールビュー（ParallelWidgetOld）
             staticWidget.Append(new ParallelWidgetOld(
@@ -457,15 +468,17 @@ public static class MRIPMainMenuPatch
                     if (list == null || list.Count == 0)
                     {
                         var errorWidget = new MetaWidgetOld();
-                        errorWidget.Append(new MetaWidgetOld.Text(NameAttribute) 
+                        // NoSのバージョン画面と同じ高さに出す（NoS側は自動更新の行 0.5×2 + 余白0.8 の下にエラーを表示している）
+                        errorWidget.Append(new MetaWidgetOld.VerticalMargin(1.8f));
+                        errorWidget.Append(new MetaWidgetOld.Text(new TextAttributeOld(NameAttribute) { Alignment = TMPro.TextAlignmentOptions.Center }) 
                         { 
                             RawText = "エラー: バージョン情報を取得できませんでした",
                             Alignment = IMetaWidgetOld.AlignmentOption.Center
                         });
-                        errorWidget.Append(new MetaWidgetOld.VerticalMargin(0.3f));
-                        errorWidget.Append(new MetaWidgetOld.Text(CategoryAttribute) 
+                        errorWidget.Append(new MetaWidgetOld.VerticalMargin(0.02f));
+                        errorWidget.Append(new MetaWidgetOld.Text(new TextAttributeOld(ErrorDetailAttribute) { Alignment = TMPro.TextAlignmentOptions.Top }) 
                         { 
-                            RawText = "GitHub APIへのアクセスが制限されています。\n\nしばらく待ってから再度お試しください。",
+                            RawText = "GitHub APIへのアクセスが制限されています。\nしばらく待ってから再度お試しください。".Sized(70),
                             Alignment = IMetaWidgetOld.AlignmentOption.Center
                         });
                         innerRef.Value?.SetWidget(errorWidget);

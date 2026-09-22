@@ -16,6 +16,7 @@ namespace MoreRolesInPolus.Scripts.Utils
                 lastMeetingCallTime = DateTime.UtcNow;
 
                 var player = PlayerControl.AllPlayerControls.GetFastEnumerator().FirstOrDefault(c => c.PlayerId == p.PlayerId);
+                if (player == null) return;
                 MeetingRoomManager.Instance.AssignSelf(player, null);
                 if (GameManager.Instance.CheckTaskCompletion())
                 {
