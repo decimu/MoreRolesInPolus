@@ -25,6 +25,11 @@ public static class MRIPModUpdater
     private const int PerPage = 30;
     
     private static string GetReleasesUrl(int page) => $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases?per_page={PerPage}&page={page}";
+
+    /// <summary>
+    /// リリースページのURLを取得
+    /// </summary>
+    public static string GetReleasePageUrl(string tag) => $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/tag/{tag}";
     
     private static int NextPage = 1;
     private static List<ReleasedInfo>? _cache = null;

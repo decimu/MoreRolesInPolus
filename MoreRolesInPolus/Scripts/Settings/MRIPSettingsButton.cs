@@ -383,7 +383,7 @@ public static class MRIPMainMenuPatch
                             {
                                 var button = text.gameObject.SetUpButton(true);
                                 button.gameObject.AddComponent<BoxCollider2D>().size = text.rectTransform.sizeDelta;
-                                button.OnClick.AddListener(() => Application.OpenURL($"https://github.com/10-ui/MoreRolesInPolus/releases/tag/{version.RawTag}"));
+                                button.OnClick.AddListener(() => Application.OpenURL(MRIPModUpdater.GetReleasePageUrl(version.RawTag)));
                                 button.OnMouseOver.AddListener(() =>
                                 {
                                     text.color = Virial.Color.Green.ToUnityColor();
