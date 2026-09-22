@@ -71,7 +71,7 @@ MoreRolesInPolus/
 #### 1. リポジトリのクローン
 
 ```powershell
-git clone https://github.com/10-ui/MoreRolesInPolus.git
+git clone https://github.com/decimu/MoreRolesInPolus.git
 cd MoreRolesInPolus
 ```
 
@@ -252,6 +252,6 @@ git push origin develop
 
 ### リリースの確認
 
-[Releases ページ](https://github.com/10-ui/MoreRolesInPolus/releases) で確認できます。
+[Releases ページ](https://github.com/decimu/MoreRolesInPolus/releases) で確認できます。
 
 ---
