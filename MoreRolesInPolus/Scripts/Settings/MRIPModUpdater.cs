@@ -20,7 +20,7 @@ namespace Toa.MoreRolesInPolus.Scripts.Settings;
 /// </summary>
 public static class MRIPModUpdater
 {
-    private const string GitHubOwner = "10-ui";
+    private const string GitHubOwner = "decimu";
     private const string GitHubRepo = "MoreRolesInPolus";
     private const int PerPage = 30;
     
