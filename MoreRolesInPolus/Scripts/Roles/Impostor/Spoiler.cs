@@ -1,81 +1,81 @@
-
+ï»¿
 namespace MoreRolesInPolus.Roles.Imposter;
 
-//spoiler ƒLƒ‹‚µ‚½‘Šè‚Ì–ğE‚ğŠm”F‚Å‚«‚éƒCƒ“ƒ|ƒXƒ^[–ğE
+//spoiler ã‚­ãƒ«ã—ãŸç›¸æ‰‹ã®å½¹è·ã‚’ç¢ºèªã§ãã‚‹ã‚¤ãƒ³ãƒã‚¹ã‚¿ãƒ¼å½¹è·
 //
 //
 public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, DefinedRole
 {
-    private const string overlayKey = "role.spoiler.overlay";
+  private const string overlayKey = "role.spoiler.overlay";
 
-    
-    private Spoiler() : base("spoiler", NebulaTeams.ImpostorTeam.Color, RoleCategory.ImpostorRole, NebulaTeams.ImpostorTeam, [])
+  
+  private Spoiler() : base("spoiler", NebulaTeams.ImpostorTeam.Color, RoleCategory.ImpostorRole, NebulaTeams.ImpostorTeam, [])
+  {
+  }
+  Image? DefinedAssignable.IconImage => iconImage;
+  static readonly Image iconImage = NebulaAPI.AddonAsset.GetResource(string.Format("Impostor/Spoiler/Spoiler.png"))!.AsImage()!;
+
+  static public readonly Spoiler MyRole = new();
+
+  AbilityAssignmentStatus DefinedRole.AssignmentStatus => AbilityAssignmentStatus.KillersSide;
+  MultipleAssignmentType DefinedRole.MultipleAssignment => MultipleAssignmentType.Allowed;
+
+
+  public override Ability CreateAbility(GamePlayer player, int[] arguments) => new Ability(player, arguments.Length > 0 ? arguments[0] == 1 : false);
+
+  //ã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼šæ®‹ã‚Šã®ãã®å½¹è·ã®äººæ•°ã‚‚è¡¨ç¤ºã™ã‚‹ã‹
+  static private readonly BoolConfiguration CanSeeRemainingRoles = NebulaAPI.Configurations.Configuration("options.role.spoiler.CanSeeRemainingRoles", true);
+  public class Ability : AbstractPlayerUsurpableAbility, IPlayerAbility
+  {
+
+    public Ability(Virial.Game.Player player, bool isUsurped) : base(player, isUsurped)
     {
+
     }
-    Image? DefinedAssignable.IconImage => iconImage;
-    static readonly Image iconImage = NebulaAPI.AddonAsset.GetResource(string.Format("Impostor/Spoiler/Spoiler.png"))!.AsImage()!;
 
-    static public readonly Spoiler MyRole = new();
-
-    AbilityAssignmentStatus DefinedRole.AssignmentStatus => AbilityAssignmentStatus.KillersSide;
-    MultipleAssignmentType DefinedRole.MultipleAssignment => MultipleAssignmentType.Allowed;
+    Dictionary<Player, (DefinedRole role, int roleCount)> roleMap = [];
 
 
-    public override Ability CreateAbility(GamePlayer player, int[] arguments) => new Ability(player, arguments.Length > 0 ? arguments[0] == 1 : false);
+    //ã‚­ãƒ«ã‚¯çŸ­ã„å½¹è·ã§ã‚­ãƒ«ã—ãŸã¨ãã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤ã‚’ä¸Šæ›¸ãã•ã›ã‚‹
+    int killCount = 0;
 
-    //ƒIƒvƒVƒ‡ƒ“Fc‚è‚Ì‚»‚Ì–ğE‚Ìl”‚à•\¦‚·‚é‚©
-    static private readonly BoolConfiguration CanSeeRemainingRoles = NebulaAPI.Configurations.Configuration("options.role.spoiler.CanSeeRemainingRoles", true);
-    public class Ability : AbstractPlayerUsurpableAbility, IPlayerAbility
+    [OnlyMyPlayer]
+    void OnKillPlayer(PlayerKillPlayerEvent ev)
+    { 
+      if(AmOwner && ev.Player != ev.Dead)
+      {
+        var targetRole = ev.Dead.Role.ExternalRecognitionRole;
+        int roleCount = Player.AllPlayers.Count(p => p.IsAlive && p.Role.ExternalRecognitionRole == targetRole);
+        roleMap[ev.Dead] = (targetRole, roleCount);
+
+        killCount++;
+
+        int nowCount = killCount;
+
+        var lifespan = FunctionalLifespan.GetTimeLifespan(7f);
+
+        bool Isalive()
+        {
+          return nowCount == killCount && lifespan.IsAliveObject;
+        }
+
+
+        NebulaAPI.GUI.ShowStickerOverlay(NebulaAPI.GUI.RawText(GUIAlignment.Center, AttributeAsset.OverlayContent, CanSeeRemainingRoles?  targetRole.DisplayColoredName +  NebulaAPI.Language.Translate(overlayKey).Replace("%COUNT%", roleCount.ToString()) : targetRole.DisplayColoredName), ev.Player.Position, () => !Isalive(),Isalive);//è¡¨ç¤ºã™ã‚‹ãŸã³ã«ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼å¢—ã‚„ã™ã€€ã“ã‚ŒãŒä½•ç•ªç›®ã‹ã¯è¦šãˆã‚‹ã€€
+
+
+      }
+    }
+
+    void ReflectRoleName(PlayerSetFakeRoleNameEvent ev)
     {
 
-        public Ability(Virial.Game.Player player, bool isUsurped) : base(player, isUsurped)
-        {
-
-        }
-
-        Dictionary<Player, (DefinedRole role, int roleCount)> roleMap = [];
-
-
-        //ƒLƒ‹ƒN’Z‚¢–ğE‚ÅƒLƒ‹‚µ‚½‚Æ‚«ƒI[ƒo[ƒŒƒC‚ğã‘‚«‚³‚¹‚é
-        int killCount = 0;
-
-        [OnlyMyPlayer]
-        void OnKillPlayer(PlayerKillPlayerEvent ev)
-        { 
-            if(AmOwner && ev.Player != ev.Dead)
-            {
-                var targetRole = ev.Dead.Role.ExternalRecognitionRole;
-                int roleCount = Player.AllPlayers.Count(p => p.IsAlive && p.Role.ExternalRecognitionRole == targetRole);
-                roleMap[ev.Dead] = (targetRole, roleCount);
-
-                killCount++;
-
-                int nowCount = killCount;
-
-                var lifespan = FunctionalLifespan.GetTimeLifespan(7f);
-
-                bool Isalive()
-                {
-                    return nowCount == killCount && lifespan.IsAliveObject;
-                }
-
-
-                NebulaAPI.GUI.ShowStickerOverlay(NebulaAPI.GUI.RawText(GUIAlignment.Center, AttributeAsset.OverlayContent, CanSeeRemainingRoles?  targetRole.DisplayColoredName +  NebulaAPI.Language.Translate(overlayKey).Replace("%COUNT%", roleCount.ToString()) : targetRole.DisplayColoredName), ev.Player.Position, () => !Isalive(),Isalive);//•\¦‚·‚é‚½‚Ñ‚ÉƒJƒEƒ“ƒ^[‘‚â‚·@‚±‚ê‚ª‰½”Ô–Ú‚©‚ÍŠo‚¦‚é@
-
-
-            }
-        }
-
-        void ReflectRoleName(PlayerSetFakeRoleNameEvent ev)
-        {
-
-            if (roleMap.ContainsKey(ev.Player))
-            {
-                var targetRole = roleMap[ev.Player];
-                ev.Alternate(CanSeeRemainingRoles? targetRole.role.DisplayColoredName + NebulaAPI.Language.Translate(overlayKey).Replace("%COUNT%", targetRole.roleCount.ToString()) : targetRole.role.DisplayColoredName);
-            } 
-        }
+      if (roleMap.ContainsKey(ev.Player))
+      {
+        var targetRole = roleMap[ev.Player];
+        ev.Alternate(CanSeeRemainingRoles? targetRole.role.DisplayColoredName + NebulaAPI.Language.Translate(overlayKey).Replace("%COUNT%", targetRole.roleCount.ToString()) : targetRole.role.DisplayColoredName);
+      } 
     }
+  }
 
 
 

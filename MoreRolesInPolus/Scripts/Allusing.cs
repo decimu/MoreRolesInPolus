@@ -1,4 +1,4 @@
-global using GamePlayer = Virial.Game.Player;
+﻿global using GamePlayer = Virial.Game.Player;
 global using System;
 global using System.Collections.Generic;
 global using System.IO;
