@@ -50,7 +50,7 @@ public static class MRIPMainMenuPatchSetup
             MRIPMenuClearScreenPatch.Apply(HarmonyInstance);
             
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
@@ -78,7 +78,7 @@ public static class MRIPMenuClearScreenPatch
             harmony.Patch(resetScreenMethod, postfix: new HarmonyMethod(postfix));
             Patched = true;
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
@@ -123,7 +123,7 @@ public static class MRIPMainMenuPatch
             // ボタン追加と自動更新チェック
             __instance.StartCoroutine(SetupMRIPButton(__instance).WrapToIl2Cpp());
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
@@ -426,7 +426,7 @@ public static class MRIPMainMenuPatch
                         
                         inner.Append(new CombinedWidgetOld(0.5f, placeable.ToArray()) { Alignment = IMetaWidgetOld.AlignmentOption.Left });
                     }
-                    catch (System.Exception ex)
+                    catch (System.Exception)
                     {
                     }
                 }
@@ -491,7 +491,7 @@ public static class MRIPMainMenuPatch
             }
             
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
