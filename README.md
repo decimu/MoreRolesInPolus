@@ -186,10 +186,9 @@ git push origin feature/researcher
 
 **4. 安定版リリース（main）:**
 ```bash
-# GitHubでPR作成: develop → main
-# PRタイトルに v1.0.0 を含める
-# 例: "v1.0.0: 初回リリース"
-# マージすると自動で v1.0.0 リリース
+# MoreRolesInPolus/addon.meta の "Version" を "1.0.0" に上げて develop にコミット
+# develop を main にマージ（PRタイトルは自由。git push origin develop:main でも可）
+# → 自動で v1.0.0 リリース
 ```
 
 ### リリース方法
@@ -198,16 +197,21 @@ git push origin feature/researcher
 
 | 項目 | Snapshot（開発版） | Major（正式版） |
 |------|-------------------|----------------|
-| **トリガー** | `develop` へpush | `main` へPRマージ |
+| **トリガー** | `develop` へpush | `main` へpush（PRマージ含む） |
+| **バージョン** | 日付から自動採番 | `addon.meta` の `Version` |
 | **条件** | `MoreRolesInPolus/**` 変更時のみ | `MoreRolesInPolus/**` 変更時のみ |
 | **タグ形式** | `s,Snapshot_25.12.30a` | `v,v1.0.0` |
 | **リリース名** | `MoreRolesInPolus-Snapshot_25.12.30a` | `MoreRolesInPolus-v1.0.0` |
 | **ファイル名** | `MoreRolesInPolus-Snapshot_25.12.30a.zip` | `MoreRolesInPolus-v1.0.0.zip` |
-| **Latest** | ✅ Yes | ✅ Yes |
-| **Pre-release** | ❌ No | ❌ No |
+| **Latest** | ❌ No | ✅ Yes |
+| **Pre-release** | ✅ Yes | ❌ No |
+| **マーケットプレイス自動配信** | ❌ されない | ✅ される |
 
 > ⚠️ **重要**: `.csproj` や `README.md` などの変更のみでは自動リリースは**発動しません**。  
 > `MoreRolesInPolus/` フォルダ内のコード変更時のみリリースが作成されます。
+
+> ℹ️ NoS のマーケットプレイスは Latest リリースだけを自動配信します。  
+> Snapshot は Pre-release なので一般プレイヤーには届かず、MRIP のバージョン画面から選んでインストールします。
 
 #### Snapshot（開発版）リリース
 
@@ -215,8 +219,9 @@ git push origin feature/researcher
 
 1. `MoreRolesInPolus/` 内のファイルを編集
 2. `develop` ブランチにpush（直接 or PRマージ）
-3. 自動で `s,Snapshot_25.12.30a` タグ + リリース作成
+3. 自動で `s,Snapshot_25.12.30a` タグ + Pre-release 作成
    - 同日の2回目以降は `b`, `c`, `d`... とサフィックス付与
+   - 変更内容には前回の Snapshot 以降のコミットがすべて載ります
 
 **例:**
 ```bash
@@ -230,24 +235,20 @@ git push origin develop
 
 #### Major（正式版）リリース
 
-**PRタイトルにバージョン番号を含める：**
+**`addon.meta` の `Version` を上げて main に入れるだけ：**
 
-1. `MoreRolesInPolus/` 内のファイルが変更されていることを確認
-2. `develop` → `main` のPRを作成
-3. **PRタイトルに `v1.0.0` を含める**
-   - ✅ `"v1.0.0: Initial release"`
-   - ✅ `"v1.2.3: Add new roles"`
-   - ❌ `"Bug fix"` (バージョン番号なし → リリースされない)
-4. PRをマージ
-5. 自動で `v,v1.0.0` タグ + `MoreRolesInPolus-v1.0.0.zip` リリース作成
+1. `MoreRolesInPolus/addon.meta` の `"Version"` を上げる（例: `"1.0.0"`、`1.2.3` の形式）
+2. develop にコミットして push（この時点では Snapshot が作られる）
+3. develop を main にマージ（PR でも `git push origin develop:main` でも可。PRタイトルは自由）
+4. 自動で `v,v1.0.0` タグ + `MoreRolesInPolus-v1.0.0.zip` リリース作成
 
-**Visual Studio からタグを作成する方法:**
+> ⚠️ `Version` を上げ忘れて main に入れると、「リリース済み」としてワークフローが失敗します（メールで通知されます）。  
+> `Version` を上げて再度 main に入れれば、そこでリリースされます。
 
-1. `表示` → `Git リポジトリ`
-2. 右側の `履歴` タブでコミットを右クリック
-3. `新しいタグ` を選択
-4. タグ名: `v,v1.0.0` (カンマ必須)
-5. `Git 変更` → `プッシュ` → `タグをプッシュ` にチェック
+**リリースをやり直す方法:**
+
+リリースが途中で失敗した場合は、GitHub の `Actions` タブ → `Major Release` → `Run workflow`（ブランチ `main`）で再実行できます。  
+（タグを手動で push してもリリースは作成されません）
 
 ### リリースの確認
 
