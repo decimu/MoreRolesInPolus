@@ -42,7 +42,6 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
             if (canSeeAllInfo || inEndScene) name += MyRole.GetRoleIconTagSmall();
         }
 
-        bool nowMeeting = false;
         bool myDead = false;
         int numOfKillCount = 0;
         int numOfButtonCount = 0;
@@ -53,7 +52,7 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
         void OnKillPlayer(PlayerKillPlayerEvent ev)
         {
             if (!MyPlayer.IsAlive) return;
-            if (AmOwner && !nowMeeting)
+            if (AmOwner)
             {
                 if (MyPlayer.IsDead)
                 {
@@ -69,9 +68,8 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
    
                     if(showMeetingInFlash) AmongUsUtil.PlayQuickFlash(MyRole.UnityColor);
 
-                    float t = Mathn.Max(0.1f, meetingDelayOption) + meetingDelayDispersionOption * (float)System.Random.Shared.NextDouble();
+                    float t = Virial.Utilities.Mathn.Max(0.1f, meetingDelayOption) + meetingDelayDispersionOption * (float)System.Random.Shared.NextDouble();
                     
-                    if(nowMeeting) return;
                     NebulaManager.Instance.StartCoroutine(WaitAndCallCoroutine(t).WrapToIl2Cpp());
                     numOfButtonCount ++;
 
@@ -85,10 +83,9 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
 
             // 待機後に条件がまだ満たされていれば実行
             if (!AmOwner) yield break;
-            if (nowMeeting) yield break;
             if ((myDead || MyPlayer.IsDead) && !AllowGhostMeeting) yield break;
 
-            CallMeetingHelper.CallMeeting(MyPlayer, nowMeeting);
+            CallMeetingHelper.CallMeeting(MyPlayer);
         }
 
         [Local]
@@ -113,7 +110,6 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
         {
             if (AmOwner)
             {
-                nowMeeting = false;
                 numOfKillCount = 0;
                 deadPlayer.Clear();
             }
@@ -126,7 +122,6 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
             if (AmOwner)
             {
                 nowTurn++;
-                nowMeeting = true;
                 numOfKillCount = 0;
                 deadPlayer.Clear();
             }

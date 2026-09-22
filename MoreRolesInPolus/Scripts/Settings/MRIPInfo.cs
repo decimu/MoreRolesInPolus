@@ -13,7 +13,7 @@ public static class MRIPInfo
     /// <summary>
     /// アドオンID（addon.metaのIdと一致）
     /// </summary>
-    public const string AddonId = "MoreRolesInPolus";
+    public const string AddonId = "more-roles-in-polus";
     
     /// <summary>
     /// 表示用の短縮名

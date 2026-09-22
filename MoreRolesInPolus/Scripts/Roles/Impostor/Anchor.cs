@@ -1,11 +1,12 @@
 ﻿using Virial.Runtime;
+using global::MoreRolesInPolus.Scripts.Core;
 
 namespace MoreRolesInPolus.Roles.Imposter
 {
     [NebulaPreprocess(PreprocessPhase.PostFixStructure)]
     public static class HarmonyPatchSetUp
     {
-        public static Harmony harmony;
+        public static Harmony? harmony;
         public static void Preprocess(NebulaPreprocessor preprocessor)
         {
             harmony = new Harmony("ToaPatch");
@@ -93,7 +94,7 @@ namespace MoreRolesInPolus.Roles.Imposter
                 vent.Center = null;
                 vent.EnterVentAnim = null;
                 vent.ExitVentAnim = null;
-                vent.Offset = new UnityEngine.Vector3(0f, 0.25f, 0f);
+                vent.Offset = new Virial.Compat.Vector3(0f, 0.25f, 0f);
                 vent.Id = ShipStatus.Instance.AllVents.Max(v => v.Id) + 1;
                 SpriteRenderer component = vent.GetComponent<SpriteRenderer>();
                 component.sprite = GetSprite(0);
@@ -287,7 +288,7 @@ namespace MoreRolesInPolus.Roles.Imposter
                 {
                     // チェインシフト直後など、他クライアントでオブジェクト生成が遅れるケースに備えて
                     // 保留中IDの復元を定期的に再試行する。
-                    GameOperatorManager.Instance.Subscribe<GameUpdateEvent>(_ =>
+                    GameOperatorManager.Instance!.Subscribe<GameUpdateEvent>(_ =>
                     {
                         TryRestoreJacksFromPendingIds();
                     }, this);
@@ -306,26 +307,26 @@ namespace MoreRolesInPolus.Roles.Imposter
                         if (this.leftJacks <= 0) return;
 
                         // 1. プレイヤーの現在の「確実に安全な」足元位置
-                        UnityEngine.Vector2 playerPos = (UnityEngine.Vector2)PlayerControl.LocalPlayer.GetTruePosition();
-                        UnityEngine.Vector2 finalPos = playerPos;
+                        Virial.Compat.Vector2 playerPos = PlayerControl.LocalPlayer.GetTruePosition();
+                        Virial.Compat.Vector2 finalPos = playerPos;
 
                         // 2. 周囲 0.6f にある壁をすべて取得（1.0fだと角で跳ねすぎるので0.6fがベスト）
                         var hits = UnityEngine.Physics2D.OverlapCircleAll(playerPos, 0.6f, UnityEngine.LayerMask.GetMask("Ship", "Decls"));
 
                         if (hits.Length > 0)
                         {
-                            UnityEngine.Vector2 pushCorrection = UnityEngine.Vector2.zero;
+                            Virial.Compat.Vector2 pushCorrection = Virial.Compat.Vector2.Zero;
 
                             foreach (var hit in hits)
                             {
-                                UnityEngine.Vector2 wallPoint = hit.ClosestPoint(playerPos);
-                                float dist = UnityEngine.Vector2.Distance(playerPos, wallPoint);
+                                Virial.Compat.Vector2 wallPoint = hit.ClosestPoint(playerPos);
+                                float dist = playerPos.Distance(wallPoint);
 
                                 // 壁に近すぎる（0.5f未満）場合
                                 if (dist < 0.5f)
                                 {
                                     // 壁からプレイヤーに向かうベクトル（安全な方向）
-                                    UnityEngine.Vector2 escapeDir = (playerPos - wallPoint).normalized;
+                                    Virial.Compat.Vector2 escapeDir = (playerPos - wallPoint).Normalized;
 
                                     // 足りない距離分だけ「プレイヤー側」へ押し戻す
                                     // これにより、上下左右どの壁であっても「内側」へ補正されます
@@ -483,7 +484,7 @@ namespace MoreRolesInPolus.Roles.Imposter
                         cameraIndicator = new GameObject("JackCameraIndicator");
                         cameraIndicator.layer = LayerMask.NameToLayer("UI");
                         cameraIndicator.transform.SetParent(HudManager.Instance.transform, false);
-                        cameraIndicator.transform.localPosition = new UnityEngine.Vector3(0f, 0f, -50f);
+                        cameraIndicator.transform.localPosition = new Virial.Compat.Vector3(0f, 0f, -50f);
 
                         // テキストインジケーター
                         var textObj = new GameObject("IndicatorText");
@@ -493,9 +494,9 @@ namespace MoreRolesInPolus.Roles.Imposter
                         indicatorText.text = $"[CAMERA {currentCameraIndex + 1}/{globalJacks.Count}]";
                         indicatorText.fontSize = 3f;
                         indicatorText.alignment = TextAlignmentOptions.TopLeft;
-                        indicatorText.color = new UnityEngine.Color(1f, 0.3f, 0.3f, 1f);
+                        indicatorText.color = new Virial.Color(1f, 0.3f, 0.3f, 1f).ToUnityColor();
                         indicatorText.fontStyle = TMPro.FontStyles.Bold;
-                        indicatorText.transform.localPosition = new UnityEngine.Vector3(-4.5f, 2.5f, -10f);
+                        indicatorText.transform.localPosition = new Virial.Compat.Vector3(-4.5f, 2.5f, -10f);
                         indicatorText.sortingOrder = 100;
 
                         // 操作説明
@@ -506,8 +507,8 @@ namespace MoreRolesInPolus.Roles.Imposter
                         helpText.text = "ESC:Exit";
                         helpText.fontSize = 1.5f;
                         helpText.alignment = TextAlignmentOptions.TopLeft;
-                        helpText.color = new UnityEngine.Color(0.8f, 0.8f, 0.8f, 0.8f);
-                        helpText.transform.localPosition = new UnityEngine.Vector3(-4.5f, 2.0f, -10f);
+                        helpText.color = new Virial.Color(0.8f, 0.8f, 0.8f, 0.8f).ToUnityColor();
+                        helpText.transform.localPosition = new Virial.Compat.Vector3(-4.5f, 2.0f, -10f);
                         helpText.sortingOrder = 100;
                     }
 
@@ -590,7 +591,7 @@ namespace MoreRolesInPolus.Roles.Imposter
                         if (PlayerControl.LocalPlayer.lightSource != null)
                         {
                             var camPos = Camera.main.transform.position;
-                            PlayerControl.LocalPlayer.lightSource.transform.position = new UnityEngine.Vector3(
+                            PlayerControl.LocalPlayer.lightSource.transform.position = new Virial.Compat.Vector3(
                                 camPos.x, camPos.y, PlayerControl.LocalPlayer.lightSource.transform.position.z
                             );
                         }
@@ -608,7 +609,7 @@ namespace MoreRolesInPolus.Roles.Imposter
                         if (ev.Player.AmOwner)
                         {
                             var currentJacks = globalJacks ?? localJacks;
-                            Jack targetVent = currentJacks.FirstOrDefault(obj => ev.Vent.Id == obj.vent.Id);
+                            Jack? targetVent = currentJacks.FirstOrDefault(obj => ev.Vent.Id == obj.vent.Id);
                             if (targetVent != null)
                             {
                                 RpcPlayJackVentAnimation.Invoke(targetVent.ObjectId);

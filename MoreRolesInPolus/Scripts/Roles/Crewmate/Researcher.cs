@@ -56,7 +56,7 @@ public class Researcher : DefinedSingleAbilityRoleTemplate<Researcher.Ability>, 
 
         private Dictionary<byte, string> lastPlayerRooms = new();
         private float timer = 0f;
-        private const float interval = 0.5f;
+        private const float interval = 0.25f;
 
         int leftUses;
         // 履歴レコード: 時間、プレイヤー、内容、そしてモードプレフィックス(H/T)
@@ -77,16 +77,16 @@ public class Researcher : DefinedSingleAbilityRoleTemplate<Researcher.Ability>, 
         string GetHistory(GamePlayer player, float from, float to)
         {
             StringBuilder result = new();
+            byte targetPlayerId = player.PlayerId;
 
             foreach (var action in allActions)
             {
-                if (action.Player != player)
+                if (action.Player.PlayerId != targetPlayerId)
                 {
                     continue;
                 }
-                ;
 
-                if (action.Time <= from)
+                if (action.Time < from)
                 {
                     continue;
                 }
@@ -95,8 +95,9 @@ public class Researcher : DefinedSingleAbilityRoleTemplate<Researcher.Ability>, 
                 {
                     break;
                 }
-                float elapsedTime = MathF.Floor(to - action.Time);
-                result.AppendLine($"{elapsedTime}秒前に" + action.Text);
+                float elapsedTime = to - action.Time;
+                int roundedElapsedTime = (int)MathF.Round(elapsedTime, MidpointRounding.AwayFromZero);
+                result.AppendLine($"{roundedElapsedTime}秒前に" + action.Text);
             }
             return result.ToString();
         }
@@ -161,7 +162,7 @@ public class Researcher : DefinedSingleAbilityRoleTemplate<Researcher.Ability>, 
                     if (currentMode == AbilityMode.Instant)
                     {
                         // 通常: 直前の行動を取得 (History)
-                        string historyText = GetHistory(TargetPlayer, examineTime - SurveyTimeOption, examineTime);
+                        string historyText = GetHistory(TargetPlayer, examineTime - SurveyTimeOption.GetValue(), examineTime);
                         InthisturnResult.Add(new(examineTime, TargetPlayer, historyText, "調査モード"));
                     }
                     else
@@ -219,7 +220,7 @@ public class Researcher : DefinedSingleAbilityRoleTemplate<Researcher.Ability>, 
             {
                 if (gplayer.IsDead || gplayer.IsBlown) continue;
 
-                UnityEngine.Vector2 pos = gplayer.TruePosition;
+                Virial.Compat.Vector2 pos = gplayer.TruePosition;
 
                 var roomResult = NebulaAPI.CurrentGame.CurrentMap.GetRoomName(pos, false, false, false);
 
@@ -290,7 +291,8 @@ public class Researcher : DefinedSingleAbilityRoleTemplate<Researcher.Ability>, 
             {
                 var now = Time.time;
                 // 経過時間を計算 (監視モードなら開始からの時間)
-                float elapsedTime = MathF.Floor(now - history.Time);
+                float elapsedTime = now - history.Time;
+                int roundedElapsedTime = (int)MathF.Round(elapsedTime, MidpointRounding.AwayFromZero);
 
                 var textContent = history.Content == "" ? "何もしていないようだ。" : history.Content;
 
@@ -311,7 +313,7 @@ public class Researcher : DefinedSingleAbilityRoleTemplate<Researcher.Ability>, 
                 new NoSGameObjectGUIWrapper(GUIAlignment.Left, () => (null!, new(0f, -cachedY))),
                 NebulaAPI.GUI.HorizontalHolder(GUIAlignment.Right,
                     NebulaAPI.GUI.HorizontalMargin(cachedX),
-                    new NoSGUIText(GUIAlignment.Right, AttributeAsset.OverlayTitle, NebulaAPI.GUI.RawTextComponent($"{history.Prefix} {elapsedTime}秒前"))
+                    new NoSGUIText(GUIAlignment.Right, AttributeAsset.OverlayTitle, NebulaAPI.GUI.RawTextComponent($"{history.Prefix} {roundedElapsedTime}秒前"))
                 ), playerinfo
                 );
 

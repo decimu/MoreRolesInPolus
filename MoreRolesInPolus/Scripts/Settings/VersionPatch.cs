@@ -61,7 +61,7 @@ public static class MRIPHarmonySetUp
             HarmonyInstance.Patch(lobbyStartMethod, postfix: lobbyHarmonyMethod);
             
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
@@ -107,7 +107,7 @@ public static class MRIPVersionPatch
             // VersionShower自体がMonoBehaviourなので直接StartCoroutineを使用
             __instance.StartCoroutine(MonitorVersionShowerText(__instance).WrapToIl2Cpp());
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
@@ -124,7 +124,7 @@ public static class MRIPVersionPatch
             // Nebulaのパッチでテキストが作成されるまで少し待つ必要があるのでコルーチンで処理
             __instance.StartCoroutine(FindAndUpdateLobbyVersionText().WrapToIl2Cpp());
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
@@ -155,7 +155,7 @@ public static class MRIPVersionPatch
             {
             }
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }

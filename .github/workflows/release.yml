@@ -1,140 +1,124 @@
 name: Major Release
 
+# main に addon の変更が入ったら、addon.meta の Version でリリースする
+# （PR マージでも直接 push でも可。PR タイトルは自由）
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - main
     paths:
       - 'MoreRolesInPolus/**'
+  # 失敗したリリースのやり直し用（main の addon.meta の Version で再実行）
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: major-release
+  cancel-in-progress: false
+
 jobs:
   release:
-    # PRがマージされた場合のみ実行
-    if: github.event.pull_request.merged == true
+    # 手動実行は main からのみ
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Extract Version from PR Title
+      - name: Read Version from addon.meta
         id: version
         shell: bash
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          echo "PR Title: $PR_TITLE"
+          VERSION=$(jq -r '.Version' MoreRolesInPolus/addon.meta)
+          echo "addon.meta Version: $VERSION"
 
-          # PRタイトルから v1.0.0 のようなバージョンを抽出
-          if [[ $PR_TITLE =~ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
-            VERSION_NUM="${BASH_REMATCH[1]}"
-            VERSION="v,${VERSION_NUM}"
-            FILENAME="${VERSION_NUM}"
-            # vを除いたバージョン番号（addon.meta用）
-            DISPLAY_VERSION="${VERSION_NUM#v}"
-            echo "found=true" >> $GITHUB_OUTPUT
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "display_version=$DISPLAY_VERSION" >> $GITHUB_OUTPUT
-            echo "filename=MoreRolesInPolus-$FILENAME.zip" >> $GITHUB_OUTPUT
-            echo "release_name=MoreRolesInPolus-$FILENAME" >> $GITHUB_OUTPUT
-            echo "Found version: $VERSION"
-          else
-            echo "found=false" >> $GITHUB_OUTPUT
-            echo "No version found in PR title"
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::addon.meta の Version \"$VERSION\" が 1.2.3 の形式ではありません"
+            exit 1
           fi
 
-      - name: Create Tag
-        if: steps.version.outputs.found == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ steps.version.outputs.version }}
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} ${{ steps.version.outputs.version }}
+          # タグ形式 v,v1.0.0 は MRIPModUpdater がパースするので変更しないこと
+          TAG="v,v${VERSION}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" > /dev/null; then
+            echo "::error::v${VERSION} はリリース済みです。addon.meta の Version を上げてから main に入れてください"
+            exit 1
+          fi
 
-      - name: Update addon.meta with release version
-        if: steps.version.outputs.found == 'true'
-        run: |
-          cd MoreRolesInPolus
-          # jq で Version フィールドを更新（vなしの番号）
-          jq '.Version = "${{ steps.version.outputs.display_version }}"' addon.meta > addon.meta.tmp
-          mv addon.meta.tmp addon.meta
-          echo "Updated addon.meta:"
-          cat addon.meta
-      
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "filename=MoreRolesInPolus-v${VERSION}.zip" >> $GITHUB_OUTPUT
+          echo "release_name=MoreRolesInPolus-v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Release version: $TAG"
+
       - name: Create ZIP from source
-        if: steps.version.outputs.found == 'true'
         run: |
           cd MoreRolesInPolus
-          zip -r ../${{ steps.version.outputs.filename }} .
+          zip -r "../${{ steps.version.outputs.filename }}" .
 
       - name: Generate Release Notes
-        if: steps.version.outputs.found == 'true'
-        id: release_notes
         run: |
-          CURRENT_TAG="${{ steps.version.outputs.version }}"
-          
-          # 前回のリリースタグを取得（今回のタグを除外）
-          PREV_TAG=$(git tag -l "v,v*" --sort=-version:refname | grep -v "^${CURRENT_TAG}$" | head -n 1)
-          
-          echo "Current tag: $CURRENT_TAG"
+          # 前回のリリースタグを取得（今回のタグはまだ作成していない）
+          PREV_TAG=$(git tag -l "v,v*" --sort=-version:refname | head -n 1)
           echo "Previous tag: $PREV_TAG"
-          
+
           if [ -z "$PREV_TAG" ]; then
             # 初回リリースの場合
             COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges HEAD)
           else
             # 前回タグから今回までのコミット
-            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+            COMMITS=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges)
           fi
-          
+
           # コミットが空の場合のフォールバック
           if [ -z "$COMMITS" ]; then
             COMMITS="- 軽微な修正・改善"
           fi
-          
-          echo "Commits found:"
-          echo "$COMMITS"
-          
-          # リリースノート作成（ヒアドキュメントはインデントなし）
-          cat << 'EOF' > release_notes.md
-          ## 📝 変更内容
-          
-          EOF
-          
-          echo "$COMMITS" >> release_notes.md
-          
-          cat << 'EOF' >> release_notes.md
-          
-          ## 📦 インストール方法
-          
-          1. ZIPファイルをダウンロード
-          2. **解凍せずに**そのままAmong Usの`Addons`フォルダに配置
-          EOF
-          
+
+          {
+            echo "## 📝 変更内容"
+            echo
+            echo "$COMMITS"
+            echo
+            echo "## 📦 インストール方法"
+            echo
+            echo "1. ZIPファイルをダウンロード"
+            echo "2. **解凍せずに**そのままAmong Usの\`Addons\`フォルダに配置"
+          } > release_notes.md
+
           echo "Release notes:"
           cat release_notes.md
-          
-          echo "notes<<EOFNOTES" >> $GITHUB_OUTPUT
-          cat release_notes.md >> $GITHUB_OUTPUT
-          echo "EOFNOTES" >> $GITHUB_OUTPUT
+
+      # 成果物がすべて揃ってからタグを作成する（途中で失敗してもタグが残らないように）
+      - name: Create Tag
+        id: tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git tag "$TAG"
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}" "refs/tags/$TAG"
 
       - name: Create Release
-        if: steps.version.outputs.found == 'true'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: ${{ steps.version.outputs.filename }}
-          tag_name: ${{ steps.version.outputs.version }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.release_name }}
-          body: ${{ steps.release_notes.outputs.notes }}
+          body_path: release_notes.md
           draft: false
           prerelease: false
           make_latest: true
+
+      # リリース作成に失敗した場合はタグを消して、再実行できる状態に戻す
+      - name: Delete Tag on Failure
+        if: failure() && steps.tag.outcome == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}" ":refs/tags/$TAG"

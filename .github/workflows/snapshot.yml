@@ -10,16 +10,21 @@ on:
 permissions:
   contents: write
 
+# 連続 push 時に同じサフィックスのタグを作らないよう直列化する
+concurrency:
+  group: snapshot-release
+  cancel-in-progress: false
+
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
-    
+
     - name: Generate Snapshot Version
       id: version
       shell: bash
@@ -27,35 +32,18 @@ jobs:
         # JST (Asia/Tokyo) で日付を取得
         export TZ='Asia/Tokyo'
         DATE=$(date +"%y.%m.%d")
-        
-        # 今日の既存タグを取得してサフィックスを決定
+
+        # 今日の既存タグ数からサフィックスを決定（0件→a, 1件→b, ...）
         EXISTING_TAGS=$(git tag -l "s,Snapshot_${DATE}*" | wc -l)
-        
-        if [ $EXISTING_TAGS -eq 0 ]; then
-          SUFFIX="a"
-        else
-          # a, b, c... を計算
-          LAST_CHAR=$(printf "\x$(printf %x $((97 + $EXISTING_TAGS)))")
-          SUFFIX=$LAST_CHAR
-        fi
-        
-        VERSION="s,Snapshot_${DATE}${SUFFIX}"
-        DISPLAY_VERSION="Snapshot_${DATE}${SUFFIX}"
-        FILENAME="Snapshot_${DATE}${SUFFIX}"
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "display_version=$DISPLAY_VERSION" >> $GITHUB_OUTPUT
-        echo "filename=MoreRolesInPolus-$FILENAME.zip" >> $GITHUB_OUTPUT
-        echo "release_name=MoreRolesInPolus-$FILENAME" >> $GITHUB_OUTPUT
-    
-    - name: Create Tag
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag ${{ steps.version.outputs.version }}
-        git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} ${{ steps.version.outputs.version }}
-    
+        SUFFIX=$(printf "\x$(printf %x $((97 + EXISTING_TAGS)))")
+
+        # タグ形式 s,Snapshot_... は MRIPModUpdater がパースするので変更しないこと
+        VERSION="Snapshot_${DATE}${SUFFIX}"
+        echo "tag=s,$VERSION" >> $GITHUB_OUTPUT
+        echo "display_version=$VERSION" >> $GITHUB_OUTPUT
+        echo "filename=MoreRolesInPolus-$VERSION.zip" >> $GITHUB_OUTPUT
+        echo "release_name=MoreRolesInPolus-$VERSION" >> $GITHUB_OUTPUT
+
     - name: Update addon.meta with snapshot version
       run: |
         cd MoreRolesInPolus
@@ -64,37 +52,71 @@ jobs:
         mv addon.meta.tmp addon.meta
         echo "Updated addon.meta:"
         cat addon.meta
-    
+
     - name: Create ZIP from source
       run: |
         cd MoreRolesInPolus
-        zip -r ../${{ steps.version.outputs.filename }} .
-    
-    - name: Get commit message
-      id: commit
+        zip -r "../${{ steps.version.outputs.filename }}" .
+
+    - name: Generate Release Notes
       run: |
-        MESSAGE=$(git log -1 --pretty=%B)
-        echo "message<<EOF" >> $GITHUB_OUTPUT
-        echo "$MESSAGE" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-    
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ${{ steps.version.outputs.filename }}
-        tag_name: ${{ steps.version.outputs.version }}
-        name: ${{ steps.version.outputs.release_name }}
-        body: |
-          ## 🔧 開発版スナップショット
-          
-          ${{ steps.commit.outputs.message }}
-          
-          ## 📦 インストール方法
-          
-          1. ZIPファイルをダウンロード
-          2. **解凍せずに**そのままAmong Usの`Addons`フォルダに配置
-        draft: false
-        prerelease: false
-        make_latest: true
+        # 前回のスナップショットから今回までのコミット（複数コミットの push や PR マージもまとめて載せる）
+        PREV_TAG=$(git tag -l "s,Snapshot_*" --sort=-version:refname | head -n 1)
+        echo "Previous tag: $PREV_TAG"
+
+        if [ -z "$PREV_TAG" ]; then
+          COMMITS=$(git log -1 --pretty=format:"- %s (%h)")
+        else
+          COMMITS=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges)
+        fi
+
+        if [ -z "$COMMITS" ]; then
+          COMMITS="- 軽微な修正・改善"
+        fi
+
+        {
+          echo "## 🔧 開発版スナップショット"
+          echo
+          echo "$COMMITS"
+          echo
+          echo "## 📦 インストール方法"
+          echo
+          echo "1. ZIPファイルをダウンロード"
+          echo "2. **解凍せずに**そのままAmong Usの\`Addons\`フォルダに配置"
+        } > release_notes.md
+
+        echo "Release notes:"
+        cat release_notes.md
+
+    # 成果物がすべて揃ってからタグを作成する（途中で失敗してもタグが残らないように）
+    - name: Create Tag
+      id: tag
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: ${{ steps.version.outputs.tag }}
+      run: |
+        git tag "$TAG"
+        git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}" "refs/tags/$TAG"
+
+    # Pre-release は releases/latest に含まれないため、マーケットプレイスの自動更新では配信されない。
+    # MRIP のバージョン画面（releases 一覧を参照）からは選択してインストールできる。
+    - name: Create Release
+      uses: softprops/action-gh-release@v3
+      with:
+        files: ${{ steps.version.outputs.filename }}
+        fail_on_unmatched_files: true
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: ${{ steps.version.outputs.release_name }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: true
+        make_latest: false
+
+    # リリース作成に失敗した場合はタグを消して、サフィックスが飛ばないようにする
+    - name: Delete Tag on Failure
+      if: failure() && steps.tag.outcome == 'success'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: ${{ steps.version.outputs.tag }}
+      run: |
+        git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}" ":refs/tags/$TAG"

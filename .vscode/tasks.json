@@ -1,0 +1,56 @@
+{
+	// Ctrl+Shift+B で実行するビルドタスク
+	// 前提: MoreRolesInPolus.csproj（.csproj.base のコピー）と環境変数 AmongUs が設定済みであること
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Debug ビルド（Among Us 起動）",
+			"detail": "Addons に ZIP を配置し、指定した数の Among Us を起動します",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"${workspaceFolder}/MoreRolesInPolus.csproj",
+				"-c",
+				"Debug",
+				"-p:LaunchCount=${input:launchCount}"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Release ビルド",
+			"detail": "bin\\Release と Addons に配布用の MoreRolesInPolus.zip を作成します",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"${workspaceFolder}/MoreRolesInPolus.csproj",
+				"-c",
+				"Release"
+			],
+			"group": "build",
+			"problemMatcher": "$msCompile"
+		}
+	],
+	"inputs": [
+		{
+			"id": "launchCount",
+			"type": "pickString",
+			"description": "起動する Among Us の数",
+			"options": [
+				{ "label": "1", "value": "1" },
+				{ "label": "2", "value": "2" },
+				{ "label": "3", "value": "3" },
+				{ "label": "4", "value": "4" },
+				{ "label": "5", "value": "5" },
+				{ "label": "6", "value": "6" },
+				{ "label": "0（ビルドのみ・起動しない）", "value": "0" }
+			],
+			"default": "1"
+		}
+	]
+}

@@ -1,4 +1,4 @@
-## Toa Made
+### Toa Made
 
 ## Anchor - Impostor
 
@@ -44,37 +44,36 @@
 "achievement.researcher.challenge.splitted.1" : "深淵に"
 "achievement.researcher.challenge.splitted.3" : "行方は、、、"
 
-## Coordinator - Neutral
-"teams.coordinator" : "コーディネーター"
-"role.coordinator.name" : "コーディネーター"
-"role.coordinator.short" : "コー"
-"role.coordinator.blurb" : "すべての座標は、その手の中に"
-"options.role.coordinator.cooldownMin" : "クールダウン（最小：高スコア時）"
-"options.role.coordinator.cooldownMax" : "クールダウン（最大：低スコア時）"
-"options.role.coordinator.overrideInitialCooldown" : "初期クールダウンを上書き"
-"options.role.coordinator.initialCooldown" : "初期クールダウン"
-"options.role.coordinator.pointsMultiplier" : "勝利に必要なポイント倍率（5000x）"
-"options.role.coordinator.detail" : "プレイヤーを選択し、マップ上でその人の位置を推測します。<br>部屋を当てればスコア獲得、外せば<color=red>対象に通知</color>がいきます。"
-"role.coordinator.short" : "コー"
-"role.coordinator.blurb" : "座標を読み解け"
-"role.coordinator.doc" : "プレイヤーを選択し、マップ上でその人の位置を推測します。<br>精度が高く、自分から遠いほどキルクールダウンが短くなります。<br>部屋を当てれば成功、外せば<color=red>対象に通知</color>がいきます。"
-"options.role.coordinator.detail" : "プレイヤーを選択し、マップ上でその人の位置を推測します。<br>精度が高く、自分から遠いほどキルクールダウンが短くなります。<br>部屋を当てれば成功、外せば<color=red>対象に通知</color>がいきます。"
-"options.role.coordinator.coordinateCoolDown" : "座標特定クールダウン"
-"options.role.coordinator.killCooldownBase" : "キルクールダウン（基本値）"
-"options.role.coordinator.killCooldownMin" : "キルクールダウン（最小値）"
-"options.role.coordinator.killCooldownMax" : "キルクールダウン（最大値）"
-"button.label.coordinate" : "座標特定"
-"coordinator.selectPlayer" : "ターゲットを選択"
-"coordinator.selectRoom" : "部屋を選択"
-"coordinator.notification.failed" : "見られている気がしたが、気のせいだったようだ..."
-"role.coordinator.taskText" : "[Coordinator] %SCORE%/%GOAL% pt"
-"role.coordinator.area.polus.outside.ejection" : "屋外（オフィス右溶岩）"
-"role.coordinator.area.polus.outside.comms" : "屋外（通信室左外）"
-"end.coordinator" : "コーディネーター%EXTRA%勝利"
+## Autocracy - Crewmate
+"role.autocracy.name" : "独裁者"
+"role.autocracy.short" : "独"
+"role.autocracy.blurb" : "議場を独裁せよ"
+"role.autocracy.doc" : "タスクターンを強制終了して特別な緊急会議（独裁会議）を発動し、処刑対象を指定できるクルーメイトです。<br>独裁会議では、指定した人物をその日の処刑者にすることができます。<br>ただし、むやみにやると嫌われます。"
+"role.autocracy.tips" : "・独裁会議は強力ですが、使いどころを誤るとクルー全体の勝率を下げます。<br>・終盤の確定情報や処刑先が固まった場面で使うと効果的です。<br>・<color=#ff6941>特定の役職</color>が生存している場合、独裁者自身が死亡してしまうかも？"
+
+"role.autocracy.ability.title" : "固有能力 "独裁会議""
+"role.autocracy.ability.main" : "独裁会議を発動すると、通常の議論進行を打ち切って処刑対象を指定できます。<br>独裁会議中はGuesserの能力使用が制限されます。"
+"role.autocracy.ability.autocracy" : "<title>独裁会議</title>タスクターンを強制終了し、独裁会議を開始します。<br>会議中は処刑対象を指定して、その日の処刑結果を確定させます。"
+
+"button.label.autocracy" : "独裁会議"
+
+"options.role.autocracy.detail" : "独裁者は<color=#ff4d4d>タスクターンを強制終了</color>し、<color=#ffd166>独裁会議</color>を発動できます。<br>独裁会議では処刑対象を指定し、<color=#ff4d4d>その日の処刑結果を強制</color>できます。"
+
+## Rebel - Crewmate(Madmate)
+"role.rebel.name" : "レブル"
+"role.rebel.short" : "レブ"
+"role.rebel.blurb" : "理不尽な独裁を食い止めろ"
+"options.role.rebel.detail" : "レブルは<color=#ff4d4d>独裁者と付随して出現</color>する反逆の狂人です。<br>通常はインポスター勝利で勝利し、クルーメイト勝利では敗北します。<br>タスク関連設定を有効にすると、完了タスク数に応じてインポスターを段階的に判明できます。"
+"options.role.rebel.overrideTasks" : "タスク数を役職側で上書きする"
+"options.role.rebel.numOfTasksRequired" : "要求タスク数"
+"options.role.rebel.useMadmateIdentifySettings" : "通常Madmateの判明設定に従う"
+"options.role.rebel.canIdentifyImpostorsByTasks" : "タスク達成でインポスターを判明させる"
+"options.role.rebel.tasksRequiredForIdentify" : "判明に必要な完了タスク数"
+
 
 ### junjun Made
 
-#スポイラー spoiler impostor modifier
+##スポイラー modifier for Impostor
 "role.spoiler.name" : "スポイラー"
 "role.spoiler.short" : "スポ"
 "role.spoiler.blurb" : "ネタバレ注意"
@@ -83,7 +82,7 @@
 "role.spoiler.overlay" : "残り%COUNT%人"
 "options.role.spoiler.CanSeeRemainingRoles" : "キルした役職の残り人数が見える"
 
-#アキューサー neutral
+##アキューサー neutral
 "teams.accuser" : "アキューサー"
 "role.accuser.name" : "アキューサー"
 "role.accuser.short" : "アキュ"
@@ -92,9 +91,12 @@
 "options.role.accuser.detail" : "他役職を一定数推測をすることにより勝利が出来ます"
 "options.role.accuser.NumOfGuessToWinOption" : "勝利に必要な推測成功回数"
 "options.role.accuser.numOfGuessPerMeeting" : "１回の会議で推測できる回数"
+"options.role.accuser.NumOfMissAllowedOption" : "許容ミス回数"
+"options.role.accuser.DisableGuessAfterMissOption" : "ミスした場合その会議中にゲッサーを出来なくするか"
+"role.accuser.leftMiss" : "のこりミス可能回数"
 "end.accuser" : "アキューサー%EXTRA%勝利"
 
-#ばーくろー modifier for crewmate
+##ばーくろー modifier for Crewmate
 "role.barclaw.name" : "ばーくろー"
 "role.barclaw.short" : "ば"
 "role.barclaw.generalBlurb" : "死が重なれば、沈黙は破られる"
@@ -108,7 +110,9 @@
 "options.role.barclaw.meetingDelayDispersionOption" : "会議が始まるまでの遅延のばらつき"
 "options.role.barclaw.allowGhostMeeting" : "死んでいても通報が入るか"
 
-# Settings
+### Common
+
+## Settings
 "settings.mrip.category.stable" : "安定版"
 "settings.mrip.category.snapshot" : "スナップショット"
 "settings.mrip.category.unknown" : "不明"
@@ -119,6 +123,7 @@
 "settings.mrip.dialog.title" : "MRIP設定"
 "settings.mrip.dialog.ok" : "OK"
 "settings.mrip.button.name" : "MRIP設定"
+"settings.mrip.button.backToNoS" : "← NoS設定"
 "settings.mrip.loading" : "バージョン情報を読み込み中..."
 "settings.mrip.status.current" : "使用中"
 "settings.mrip.button.get" : "取得"
