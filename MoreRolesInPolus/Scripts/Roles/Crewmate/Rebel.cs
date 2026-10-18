@@ -18,21 +18,26 @@ public class Rebel
       4,
       () => OverrideTasksOption
     );
+  // 原作（人狼ジャッジメントの反逆の狂人）にない追加能力は、すべて初期値オフ
+  private static readonly BoolConfiguration CanIdentifyImpostorsOption =
+    NebulaAPI.Configurations.Configuration("options.role.rebel.canIdentifyImpostors", false);
   private static readonly BoolConfiguration UseMadmateIdentifySettingsOption =
-    NebulaAPI.Configurations.Configuration("options.role.rebel.useMadmateIdentifySettings", true);
-  private static readonly BoolConfiguration CanIdentifyImpostorsByTasksOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.rebel.canIdentifyImpostorsByTasks",
+      "options.role.rebel.useMadmateIdentifySettings",
       true,
-      () => !UseMadmateIdentifySettingsOption
+      () => CanIdentifyImpostorsOption
     );
   private static readonly IntegerConfiguration TasksRequiredForIdentifyOption =
     NebulaAPI.Configurations.Configuration(
       "options.role.rebel.tasksRequiredForIdentify",
       (1, 15, 1),
       2,
-      () => !UseMadmateIdentifySettingsOption && CanIdentifyImpostorsByTasksOption
+      () => CanIdentifyImpostorsOption && !UseMadmateIdentifySettingsOption
     );
+  private static readonly BoolConfiguration CanUseVentOption =
+    NebulaAPI.Configurations.Configuration("options.role.rebel.canUseVent", false);
+  private static readonly BoolConfiguration WideVisionOption =
+    NebulaAPI.Configurations.Configuration("options.role.rebel.wideVision", false);
   private static readonly int[] DefaultMadmateTaskThresholds = [2, 4, 6];
 
   private Rebel()
@@ -44,9 +49,11 @@ public class Rebel
       [
         OverrideTasksOption,
         NumOfTasksRequiredOption,
+        CanIdentifyImpostorsOption,
         UseMadmateIdentifySettingsOption,
-        CanIdentifyImpostorsByTasksOption,
         TasksRequiredForIdentifyOption,
+        CanUseVentOption,
+        WideVisionOption,
       ],
       withAssignmentOption: false,
       withOptionHolder: false
@@ -56,7 +63,6 @@ public class Rebel
 
   public Ability CreateAbility(GamePlayer player, int[] arguments) => new Ability(player);
 
-  AbilityAssignmentStatus DefinedRole.AssignmentStatus => AbilityAssignmentStatus.CanLoadToMadmate;
   public static Rebel MyRole = new();
 
   RuntimeRole RuntimeAssignableGenerator<RuntimeRole>.CreateInstance(
@@ -224,9 +230,12 @@ public class Rebel
 
     private static int GetIdentifyImpostorCount()
     {
+      if (!CanIdentifyImpostorsOption)
+        return 0;
+
       if (!UseMadmateIdentifySettingsOption)
       {
-        return CanIdentifyImpostorsByTasksOption ? 1 : 0;
+        return 1;
       }
 
       return GetSharableIntOrDefault("options.role.madmate.canIdentifyImpostors", 0);
@@ -263,6 +272,8 @@ public class Rebel
 
     void OnUpdateVentState(PlayerUpdateVentStateLocalEvent Event)
     {
+      if (!CanUseVentOption)
+        return;
       if (!AmOwner)
         return;
       if (Event.Player != MyPlayer)
@@ -274,6 +285,8 @@ public class Rebel
 
     void OnLightRangeUpdate(LightRangeUpdateEvent Event)
     {
+      if (!WideVisionOption)
+        return;
       if (!AmOwner)
         return;
       if (RebelVisionMultiplier > Event.LightQuickRange)

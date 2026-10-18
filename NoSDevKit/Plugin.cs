@@ -26,6 +26,8 @@ public class Plugin : BasePlugin
     internal static ConfigEntry<string> AddonSourceDir = null!;
     internal static ConfigEntry<bool> AutoFreeplayEnabled = null!;
     internal static ConfigEntry<int> AutoFreeplayDummies = null!;
+    internal static ConfigEntry<string> AutoFreeplayRole = null!;
+    internal static ConfigEntry<string> AutoFreeplayDummyRoles = null!;
     internal static ConfigEntry<string> LogIgnorePattern = null!;
     internal static ConfigEntry<bool> LogOverlay = null!;
 
@@ -37,6 +39,8 @@ public class Plugin : BasePlugin
         AddonSourceDir = Config.Bind("HotReload", "AddonSourceDir", "", "addon.meta を直接含むアドオンのソースフォルダ（例: D:\\.Project\\MyAddon\\MyAddon）");
         AutoFreeplayEnabled = Config.Bind("AutoFreeplay", "Enabled", true, "起動後にローカルロビーを作り、フリープレイを自動で開始する（起動中に Shift を押すと中止）");
         AutoFreeplayDummies = Config.Bind("AutoFreeplay", "NumOfDummies", 4, new ConfigDescription("フリープレイで追加するダミーの人数", new AcceptableValueRange<int>(0, 23)));
+        AutoFreeplayRole = Config.Bind("AutoFreeplay", "Role", "", "フリープレイ開始後に自分をこの役職にする（役職の内部名。例: autocracy。空なら変えない）");
+        AutoFreeplayDummyRoles = Config.Bind("AutoFreeplay", "DummyRoles", "", "フリープレイ開始後にダミーをこの役職にする（カンマ区切りで先頭のダミーから順に。例: rebel,impostor）");
         LogIgnorePattern = Config.Bind("Log", "IgnorePattern", DefaultIgnorePattern, "DevKit.log とゲーム内表示から除く行の正規表現（「出所 本文」に対して判定）");
         LogOverlay = Config.Bind("Log", "Overlay", true, "警告・エラーと NoSDevKit の通知をゲーム画面の左上に表示する");
 
@@ -46,8 +50,11 @@ public class Plugin : BasePlugin
 
         AddComponent<MainThread>();
 
+        // 命令ファイルは 1 つなので、最初に起動したゲームだけが読む
+        if (Instance.IsFirst) DevCommands.Start();
+
         // 複数起動したときに全員がロビーを作らないよう、最初の 1 つだけで行う
-        if (AutoFreeplayEnabled.Value && Instance.IsFirst) AutoFreeplay.Start(AutoFreeplayDummies.Value);
+        if (AutoFreeplayEnabled.Value && Instance.IsFirst) AutoFreeplay.Start(AutoFreeplayDummies.Value, AutoFreeplayRole.Value, AutoFreeplayDummyRoles.Value);
         else if (AutoFreeplayEnabled.Value) Log.LogInfo($"AutoFreeplay: {Instance.Index} 番目に起動したゲームなので行いません");
 
         if (HotReloadEnabled.Value)

@@ -12,17 +12,21 @@ namespace NoSDevKit.AutoStart;
 /// </summary>
 internal static class AutoFreeplay
 {
-    private enum State { WaitMenu, OpenLocalMenu, ClickHostLocal, WaitCreateOptions, WaitLobby, WaitCanStart, WaitInGame, Done }
+    private enum State { WaitMenu, OpenLocalMenu, ClickHostLocal, WaitCreateOptions, WaitLobby, WaitCanStart, WaitInGame, ApplyRole, Done }
 
     private static State state = State.WaitMenu;
     private static float stateTime;
     private static int dummies;
+    private static string startRole = "";
+    private static string[] dummyRoles = [];
 
     private static Assembly? nebula;
 
-    public static void Start(int numOfDummies)
+    public static void Start(int numOfDummies, string role, string dummyRoleList)
     {
         dummies = numOfDummies;
+        startRole = role.Trim();
+        dummyRoles = dummyRoleList.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         MainThread.OnUpdate += Tick;
         Plugin.Logger.LogInfo($"AutoFreeplay: 起動後にフリープレイを開始します（ダミー {dummies} 人。起動中に Shift を押すと中止）");
     }
@@ -124,7 +128,10 @@ internal static class AutoFreeplay
                 if (Elapsed > 1f && GetNebulaStatic("Nebula.Patches.GameStartManagerUpdatePatch", "LastChecked") is true)
                 {
                     Plugin.Logger.LogInfo("AutoFreeplay: ゲームを開始します");
-                    GameStartManager.Instance.BeginGame();
+                    // BeginGame で NoS がダミーを追加する。そのあと F1（クイックスタート）と同じくカウントダウンを飛ばす
+                    var gameStartManager = GameStartManager.Instance;
+                    gameStartManager.BeginGame();
+                    if (gameStartManager.startState == GameStartManager.StartingStates.Countdown) gameStartManager.FinallyBegin();
                     SetState(State.WaitInGame);
                 }
                 else if (Elapsed > 15f) Abort("ゲームを開始できる状態になりませんでした");
@@ -135,11 +142,52 @@ internal static class AutoFreeplay
                 if (ShipStatus.Instance != null && LobbyBehaviour.Instance == null && Elapsed > 3f)
                 {
                     Plugin.Logger.LogMessage($"AutoFreeplay: フリープレイを開始しました（プレイヤー {PlayerControl.AllPlayerControls.Count} 人）");
-                    SetState(State.Done);
-                    MainThread.OnUpdate -= Tick;
+                    SetState(startRole.Length == 0 && dummyRoles.Length == 0 ? State.Done : State.ApplyRole);
+                    if (state == State.Done) MainThread.OnUpdate -= Tick;
                 }
                 else if (Elapsed > 40f) Abort("ゲームが始まりませんでした");
                 break;
+
+            case State.ApplyRole:
+                // 役職の割り当てとイントロ演出が終わってから変えないと、上書きされたり自分の情報がまだ無かったりする
+                if (IntroCutscene.Instance == null && Virial.NebulaAPI.CurrentGame?.LocalPlayer?.Role != null && Elapsed > 1f)
+                {
+                    ApplyStartRole();
+                    SetState(State.Done);
+                    MainThread.OnUpdate -= Tick;
+                }
+                else if (Elapsed > 30f) Abort("自分のプレイヤー情報が用意されないため、役職を変えられませんでした");
+                break;
+        }
+    }
+
+    /// <summary>設定された役職に自分とダミーを変える（試したい役職の組み合わせですぐ始められるように）</summary>
+    private static void ApplyStartRole()
+    {
+        Virial.Assignable.DefinedRole? Find(string name)
+        {
+            var role = Virial.NebulaAPI.Assignables.GetRole(name);
+            if (role == null)
+            {
+                var names = string.Join(", ", Virial.NebulaAPI.Assignables.AllRoles.Select(r => r.InternalName));
+                Plugin.Logger.LogWarning($"AutoFreeplay: 役職「{name}」が見つかりません。指定できる名前: {names}");
+            }
+            return role;
+        }
+
+        var me = Virial.NebulaAPI.CurrentGame!.LocalPlayer;
+        if (startRole.Length > 0 && Find(startRole) is { } myRole)
+        {
+            me.SetRole(myRole);
+            Plugin.Logger.LogMessage($"AutoFreeplay: 自分の役職を {myRole.InternalName} にしました");
+        }
+
+        var others = Virial.Game.Player.AllPlayers.Where(p => p != me).ToArray();
+        for (int i = 0; i < dummyRoles.Length && i < others.Length; i++)
+        {
+            if (Find(dummyRoles[i]) is not { } role) continue;
+            others[i].SetRole(role);
+            Plugin.Logger.LogMessage($"AutoFreeplay: ダミー（ID {others[i].PlayerId}）の役職を {role.InternalName} にしました");
         }
     }
 

@@ -28,9 +28,7 @@ public class Autocracy
   Citation? HasCitation.Citation => AddonCitations.JinroJudgement;
 
   public Ability CreateAbility(GamePlayer player, int[] arguments) =>
-    new Ability(player, arguments.GetAsBool(0));
-
-  AbilityAssignmentStatus DefinedRole.AssignmentStatus => AbilityAssignmentStatus.CanLoadToMadmate;
+    new Ability(player, arguments.GetAsBool(0), arguments.GetAsBool(1));
 
   public static Autocracy MyRole = new();
   DefinedRole[] DefinedRole.AdditionalRoles => [Rebel.MyRole];
@@ -47,19 +45,44 @@ public class Autocracy
     .AddonAsset.GetResource(string.Format("Crewmate/Autocracy/autocracyButton.png"))!
     .AsImage(115f)!;
 
+  /// <summary>会議中の投票欄に置くボタンの画像。NoS の会議用アイコン（100×110px を 115）と同じ大きさになるよう、2 倍の解像度を 230 で読む</summary>
+  static readonly Image meetingSprite = NebulaAPI
+    .AddonAsset.GetResource(string.Format("Crewmate/Autocracy/autocracyMeetingButton.png"))!
+    .AsImage(230f)!;
+
+  /// <summary>タスク中に発動したことを示す RPC の引数（会議中の発動では処刑先の PlayerId が入る）</summary>
+  private const byte NoTarget = byte.MaxValue;
+
+  /// <summary>会議中に発動したときの投票時間。独裁者がすぐに自動で投票するので短くてよい</summary>
+  private const float AutocracyVotingTime = 15f;
+
+  /// <summary>タスク中に会議を要求してから、その会議を独裁会議として扱う猶予（「緊急会議！」の演出を含む）</summary>
+  private const float TaskMeetingRequestTimeout = 15f;
+
   [NebulaRPCHolder]
   public class Ability : AbstractPlayerUsurpableAbility, IPlayerAbility
   {
-    int[] IPlayerAbility.AbilityArguments => [IsUsurped.AsInt()];
+    int[] IPlayerAbility.AbilityArguments => [IsUsurped.AsInt(), Used.AsInt()];
 
+    /// <summary>能力を使ったか（1 回限り）。役職が入れ替わっても引き継ぐ</summary>
+    bool Used;
+
+    /// <summary>今の会議が独裁会議か。会議が実際に始まってから RPC で全員に立つ</summary>
     bool InvokedSpecialMeeting = false;
 
-    public Ability(GamePlayer player, bool isUsurped)
+    /// <summary>タスク中に会議を要求した時刻。要求が通らなかった場合に後の会議を誤判定しないよう、猶予つきで扱う</summary>
+    float? TaskMeetingRequestedAt = null;
+
+    ModAbilityButton? AutocracyButton;
+
+    public Ability(GamePlayer player, bool isUsurped, bool used)
       : base(player, isUsurped)
     {
-      if (AmOwner)
+      Used = used;
+
+      if (AmOwner && !Used)
       {
-        var autocracyButton = NebulaAPI.Modules.AbilityButton(
+        AutocracyButton = NebulaAPI.Modules.AbilityButton(
           this,
           MyPlayer,
           VirtualKeyInput.Ability,
@@ -68,73 +91,188 @@ public class Autocracy
           autocracySprite
         );
 
-        autocracyButton.OnClick = (button) =>
+        AutocracyButton.OnClick = (button) =>
         {
-          InvokeSpecialMeeting();
-          button.Break();
+          if (Used || MeetingHud.Instance)
+            return;
+          TaskMeetingRequestedAt = Time.realtimeSinceStartup;
+          MyPlayer.RequestEmergencyMeeting(canInvokeInSabo: true, consumeEmergencyButton: false);
         };
       }
     }
 
     [NebulaRPC]
-    public static void RpcAutocracyMeeting(GamePlayer caller)
+    public static void RpcAutocracyMeeting(GamePlayer caller, byte targetId)
     {
       if (caller.TryGetAbility<Ability>(out var ability))
       {
-        ability.InvokedSpecialMeeting = true;
+        ability.BeginAutocracy(targetId);
       }
     }
 
-    void InvokeSpecialMeeting()
+    /// <summary>全員の端末で呼ばれ、この会議を独裁会議にする</summary>
+    void BeginAutocracy(byte targetId)
     {
-      RpcAutocracyMeeting(MyPlayer);
-      MyPlayer.RequestEmergencyMeeting(canInvokeInSabo: true, consumeEmergencyButton: false);
+      Used = true;
+      InvokedSpecialMeeting = true;
+
+      if (targetId != NoTarget)
+      {
+        // 会議中の発動：議論を打ち切って投票時間に移る（スキップ不可・同数でも追放）
+        Nebula.Patches.MeetingModRpc.RpcChangeVotingStyle.LocalInvoke(
+          (0xFFFFFFF, false, AutocracyVotingTime, true, false)
+        );
+      }
+      else
+      {
+        // タスク中の発動：議論はそのまま残し、投票のルールだけ変える
+        MeetingHudExtension.CanSkip = false;
+        MeetingHudExtension.ExileEvenIfTie = true;
+      }
+
+      // 独裁者だけが投票できる
+      MeetingHudExtension.UpdateCanVoteMask(1 << MyPlayer.PlayerId);
+
+      if (!AmOwner)
+        return;
+
+      AutocracyButton?.Break();
+
+      // 反逆者が生存していると、独裁者は指定先ではなく自分自身に投票する（＝自分が処刑される）
+      bool hasAliveRebel = NebulaGameManager.Instance!.AllPlayerInfo.Any(player =>
+        !player.IsDead && player.Role.Role == Rebel.MyRole
+      );
+      if (hasAliveRebel)
+        VoteWhenVotingStarts(MyPlayer.PlayerId);
+      else if (targetId != NoTarget)
+        VoteWhenVotingStarts(targetId);
     }
 
-    void OnMeeting(MeetingStartEvent ev)
+    void VoteWhenVotingStarts(byte targetId)
     {
-      var meeting = NebulaAPI.CurrentGame?.CurrentMeeting;
-      if (meeting == null)
-        return;
-      if (
-        meeting.InvokedBy == MyPlayer
-        && meeting.ReportedDeadBody == null
-        && InvokedSpecialMeeting
-      )
+      System.Collections.IEnumerator CoVote()
       {
-        ev.CanVote = GamePlayer.LocalPlayer!.Role.Role == Autocracy.MyRole;
-        MeetingHudExtension.ExileEvenIfTie = true;
+        while (
+          MeetingHud.Instance
+          && MeetingHud.Instance.CurrentState != MeetingHud.MeetingStates.NotVoted
+        )
+          yield return null;
+        if (MeetingHud.Instance)
+          MeetingHud.Instance.Confirm(targetId);
+      }
+      MeetingHud.Instance.StartCoroutine(CoVote().WrapToIl2Cpp());
+    }
 
-        bool HasAliveRebel = NebulaGameManager.Instance!.AllPlayerInfo.Any(Player =>
-          !Player.IsDead && Player.Role.Role == Rebel.MyRole
-        );
-
-        if (AmOwner && HasAliveRebel)
+    [Local]
+    void OnMeetingStart(MeetingStartEvent ev)
+    {
+      // タスク中に要求した会議が、実際に自分の緊急会議として始まったときだけ独裁会議にする
+      if (TaskMeetingRequestedAt is float requestedAt)
+      {
+        TaskMeetingRequestedAt = null;
+        var meeting = NebulaAPI.CurrentGame?.CurrentMeeting;
+        if (
+          !Used
+          && Time.realtimeSinceStartup - requestedAt < TaskMeetingRequestTimeout
+          && meeting != null
+          && meeting.InvokedBy == MyPlayer
+          && meeting.ReportedDeadBody == null
+        )
         {
-          System.Collections.IEnumerator CoVote()
-          {
-            while (MeetingHud.Instance.CurrentState != MeetingHud.MeetingStates.NotVoted)
-              yield return null;
-            MeetingHud.Instance.Confirm(MyPlayer.PlayerId);
-          }
-          MeetingHud.Instance.StartCoroutine(CoVote().WrapToIl2Cpp());
+          RpcAutocracyMeeting(MyPlayer, NoTarget);
+          return;
         }
+      }
+
+      if (!Used)
+        CreateDiscussionButtons();
+    }
+
+    /// <summary>会議中の発動に使う、各プレイヤーの投票欄のボタン</summary>
+    readonly List<(GamePlayer Target, GameObject Button)> DiscussionButtons = [];
+
+    /// <summary>
+    /// 会議中の発動：処刑先のボタンを押す。議論中か、投票時間中で自分がまだ投票していない間だけ使える。
+    /// （多くの村は議論時間が 0 秒で、投票時間が実質の議論時間になっているため）
+    /// NoS の MeetingPlayerButtonManager は議論中に押せないため、同じ作り方で独自に置く。
+    /// </summary>
+    void CreateDiscussionButtons()
+    {
+      DiscussionButtons.Clear();
+      foreach (var area in MeetingHud.Instance.playerStates)
+      {
+        var target = NebulaGameManager.Instance?.GetPlayer(area.PlayerId.Value);
+        if (target == null || target.AmOwner)
+          continue;
+
+        var template = area.Buttons.transform.Find("CancelButton").gameObject;
+        var obj = UnityEngine.Object.Instantiate(template, area.transform);
+        obj.name = "AutocracyButton";
+        obj.transform.localPosition = MeetingHudExtension.VoteAreaPlayerIconPos;
+        obj.GetComponent<SpriteRenderer>().sprite = meetingSprite.GetSprite();
+
+        var button = obj.GetComponent<PassiveButton>();
+        button.OnClick.RemoveAllListeners();
+        button.OnClick.AddListener(() => OnClickDiscussionButton(target));
+
+        obj.SetActive(false);
+        DiscussionButtons.Add((target, obj));
+      }
+    }
+
+    void OnClickDiscussionButton(GamePlayer target)
+    {
+      if (!CanUseDiscussionButtons() || target.IsDead || !MeetingHudExtension.CanInvokeSomeAction)
+        return;
+      if (IsUsurped)
+      {
+        Used = true;
+        return;
+      }
+      RpcAutocracyMeeting(MyPlayer, target.PlayerId);
+    }
+
+    bool CanUseDiscussionButtons() =>
+      !Used
+      && !MyPlayer.IsDead
+      && MeetingHud.Instance
+      && MeetingHud.Instance.CurrentState
+        is MeetingHud.MeetingStates.Discussion
+          or MeetingHud.MeetingStates.NotVoted
+      && !MeetingHudExtension.ExileEvenIfTie;
+
+    [Local]
+    void OnGameUpdate(GameUpdateEvent ev)
+    {
+      if (DiscussionButtons.Count == 0)
+        return;
+      if (!MeetingHud.Instance)
+      {
+        DiscussionButtons.Clear();
+        return;
+      }
+
+      bool canUse = CanUseDiscussionButtons();
+      foreach (var (target, button) in DiscussionButtons)
+      {
+        if (button)
+          button.SetActive(canUse && !target.IsDead);
       }
     }
 
     [OnlyHost]
     void OnVote(PlayerVoteCastEvent ev)
     {
-      if (InvokedSpecialMeeting)
+      // 独裁者本人が投票した時点で投票を締め切る
+      if (!InvokedSpecialMeeting || ev.Voter != MyPlayer)
+        return;
+
+      System.Collections.IEnumerator CoWaitAndEnd()
       {
-        System.Collections.IEnumerator CoWaitAndEnd()
-        {
-          yield return null;
-          var meeting = NebulaAPI.CurrentGame?.CurrentMeeting;
-          meeting?.EndVotingForcibly(true);
-        }
-        MeetingHud.Instance.StartCoroutine(CoWaitAndEnd().WrapToIl2Cpp());
+        yield return null;
+        NebulaAPI.CurrentGame?.CurrentMeeting?.EndVotingForcibly(true);
       }
+      MeetingHud.Instance.StartCoroutine(CoWaitAndEnd().WrapToIl2Cpp());
     }
 
     void OnCanGuess(PlayerCanGuessPlayerLocalEvent Ev)
