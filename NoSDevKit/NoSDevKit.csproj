@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- 開発者専用の BepInEx プラグイン。配布するアドオンには含めない -->
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>12.0</LangVersion>
+		<RootNamespace>NoSDevKit</RootNamespace>
+		<AssemblyName>NoSDevKit</AssemblyName>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- ゲーム側に同じ DLL があるので出力にはコピーしない -->
+		<Reference Include="$(AmongUs)\BepInEx\core\*.dll" Exclude="$(AmongUs)\BepInEx\core\dobby.dll" Private="false" />
+		<Reference Include="$(AmongUs)\BepInEx\interop\*.dll" Private="false" />
+		<Reference Include="$(AmongUs)\NebulaLibs\NebulaAPI.dll" Private="false" />
+	</ItemGroup>
+
+	<!-- ビルド後に BepInEx/plugins へ配置 -->
+	<Target Name="DeployDevKit" AfterTargets="Build">
+		<!-- ゲームの起動中は DLL がロックされているので、ビルド自体は失敗させずに警告にとどめる -->
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(AmongUs)\BepInEx\plugins" Retries="0" ContinueOnError="WarnAndContinue">
+			<Output TaskParameter="CopiedFiles" ItemName="DeployedDevKit" />
+		</Copy>
+		<Message Condition="'@(DeployedDevKit)' != ''" Text="NoSDevKit を配置しました: $(AmongUs)\BepInEx\plugins" Importance="high" />
+		<Warning Condition="'@(DeployedDevKit)' == ''" Text="Among Us の起動中は NoSDevKit を配置できません。ゲームを閉じてからもう一度ビルドしてください" />
+	</Target>
+
+</Project>

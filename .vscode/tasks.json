@@ -34,6 +34,24 @@
 			],
 			"group": "build",
 			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "NoS ログを見る",
+			"detail": "NoSDevKit がまとめた DevKit.log（BepInEx + NoS）を色つきで表示し続けます",
+			"type": "process",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}/NoSDevKit/tools/Watch-DevKitLog.ps1",
+				"-MinLevel",
+				"${input:logLevel}"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"presentation": { "panel": "dedicated", "reveal": "always", "clear": true }
 		}
 	],
 	"inputs": [
@@ -51,6 +69,18 @@
 				{ "label": "0（ビルドのみ・起動しない）", "value": "0" }
 			],
 			"default": "1"
+		},
+		{
+			"id": "logLevel",
+			"type": "pickString",
+			"description": "表示する最低レベル",
+			"options": [
+				{ "label": "INF（ほぼすべて）", "value": "INF" },
+				{ "label": "MSG", "value": "MSG" },
+				{ "label": "WRN（警告とエラーだけ）", "value": "WRN" },
+				{ "label": "DBG（デバッグも含む）", "value": "DBG" }
+			],
+			"default": "INF"
 		}
 	]
 }
