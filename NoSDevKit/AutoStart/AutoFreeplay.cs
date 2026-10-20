@@ -12,19 +12,43 @@ namespace NoSDevKit.AutoStart;
 /// </summary>
 internal static class AutoFreeplay
 {
-    private enum State { WaitMenu, OpenLocalMenu, ClickHostLocal, WaitCreateOptions, WaitLobby, WaitCanStart, WaitInGame, Done }
+    private enum State { WaitMenu, OpenLocalMenu, ClickHostLocal, WaitCreateOptions, WaitLobby, WaitCanStart, WaitInGame, ApplyRole, Done }
 
     private static State state = State.WaitMenu;
     private static float stateTime;
     private static int dummies;
+    private static string startRole = "";
+    private static string[] dummyRoles = [];
+    private static bool standard;
+    private static string lobbyOptions = "";
+    private static string onlyRoles = "";
 
     private static Assembly? nebula;
 
-    public static void Start(int numOfDummies)
+    /// <param name="mode">"freeplay"（ダミーとフリープレイ）か "standard"（複数起動して通常モードで遊ぶ）</param>
+    public static void Start(string mode, int numOfDummies, string role, string dummyRoleList, string options, string onlyRoleList)
     {
+        standard = mode.Trim().Equals("standard", StringComparison.OrdinalIgnoreCase);
         dummies = numOfDummies;
+        startRole = role.Trim();
+        dummyRoles = dummyRoleList.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        lobbyOptions = options;
+        onlyRoles = onlyRoleList;
+        if (standard) LobbyTurn.Reset();
         MainThread.OnUpdate += Tick;
-        Plugin.Logger.LogInfo($"AutoFreeplay: 起動後にフリープレイを開始します（ダミー {dummies} 人。起動中に Shift を押すと中止）");
+        Plugin.Logger.LogInfo(standard
+            ? "AutoFreeplay: 起動後にローカルの部屋を立て、起動しているゲームが全員そろったら通常モードで開始します（起動中に Shift を押すと中止）"
+            : $"AutoFreeplay: 起動後にフリープレイを開始します（ダミー {dummies} 人。起動中に Shift を押すと中止）");
+    }
+
+    /// <summary>通常モードで待つ人数。同時に起動している Among Us の数</summary>
+    private static int ExpectedPlayers
+    {
+        get
+        {
+            using var me = System.Diagnostics.Process.GetCurrentProcess();
+            return System.Diagnostics.Process.GetProcessesByName(me.ProcessName).Length;
+        }
     }
 
     private static void SetState(State next)
@@ -114,32 +138,84 @@ internal static class AutoFreeplay
                 if (LobbyBehaviour.Instance != null && PlayerControl.LocalPlayer != null && GameStartManager.InstanceExists && AmongUsClient.Instance.AmHost)
                 {
                     if (!ApplyFreeplayOptions()) break;
+                    // 2 つ目以降のゲームに「部屋ができた（1 人目が入った）」と伝える
+                    if (standard) LobbyTurn.MarkJoined(1);
                     SetState(State.WaitCanStart);
                 }
                 else if (Elapsed > 30f) Abort("ロビーに入れませんでした");
                 break;
 
             case State.WaitCanStart:
-                // 設定の反映と NoS の開始可否チェックを待つ
+                // 設定の反映と NoS の開始可否チェックを待つ。通常モードでは、起動しているゲームが全員そろうのも待つ
+                if (standard && (PlayerControl.AllPlayerControls.Count < ExpectedPlayers || LobbyTurn.Joined < ExpectedPlayers))
+                {
+                    if (Elapsed > 180f) Abort($"人がそろいませんでした（{PlayerControl.AllPlayerControls.Count}/{ExpectedPlayers} 人）");
+                    break;
+                }
                 if (Elapsed > 1f && GetNebulaStatic("Nebula.Patches.GameStartManagerUpdatePatch", "LastChecked") is true)
                 {
                     Plugin.Logger.LogInfo("AutoFreeplay: ゲームを開始します");
-                    GameStartManager.Instance.BeginGame();
+                    // BeginGame で NoS がダミーを追加する。そのあと F1（クイックスタート）と同じくカウントダウンを飛ばす
+                    var gameStartManager = GameStartManager.Instance;
+                    gameStartManager.BeginGame();
+                    if (gameStartManager.startState == GameStartManager.StartingStates.Countdown) gameStartManager.FinallyBegin();
                     SetState(State.WaitInGame);
                 }
-                else if (Elapsed > 15f) Abort("ゲームを開始できる状態になりませんでした");
+                else if (Elapsed > (standard ? 195f : 15f)) Abort("ゲームを開始できる状態になりませんでした");
                 break;
 
             case State.WaitInGame:
                 // カウントダウンとマップの読み込みを待ってから結果を報告する
                 if (ShipStatus.Instance != null && LobbyBehaviour.Instance == null && Elapsed > 3f)
                 {
-                    Plugin.Logger.LogMessage($"AutoFreeplay: フリープレイを開始しました（プレイヤー {PlayerControl.AllPlayerControls.Count} 人）");
-                    SetState(State.Done);
-                    MainThread.OnUpdate -= Tick;
+                    Plugin.Logger.LogMessage($"AutoFreeplay: {(standard ? "通常モード" : "フリープレイ")}を開始しました（プレイヤー {PlayerControl.AllPlayerControls.Count} 人）");
+                    // 通常モードでは、ゲーム本来の役職の割り当てを確かめたいので役職は変えない
+                    SetState(standard || (startRole.Length == 0 && dummyRoles.Length == 0) ? State.Done : State.ApplyRole);
+                    if (state == State.Done) MainThread.OnUpdate -= Tick;
                 }
                 else if (Elapsed > 40f) Abort("ゲームが始まりませんでした");
                 break;
+
+            case State.ApplyRole:
+                // 役職の割り当てとイントロ演出が終わってから変えないと、上書きされたり自分の情報がまだ無かったりする
+                if (IntroCutscene.Instance == null && Virial.NebulaAPI.CurrentGame?.LocalPlayer?.Role != null && Elapsed > 1f)
+                {
+                    ApplyStartRole();
+                    SetState(State.Done);
+                    MainThread.OnUpdate -= Tick;
+                }
+                else if (Elapsed > 30f) Abort("自分のプレイヤー情報が用意されないため、役職を変えられませんでした");
+                break;
+        }
+    }
+
+    /// <summary>設定された役職に自分とダミーを変える（試したい役職の組み合わせですぐ始められるように）</summary>
+    private static void ApplyStartRole()
+    {
+        bool TrySet(Virial.Game.Player player, string spec)
+        {
+            try
+            {
+                var (role, arguments) = RoleSpec.Parse(spec);
+                player.SetRole(role, arguments);
+                return true;
+            }
+            catch (ArgumentException e)
+            {
+                Plugin.Logger.LogWarning("AutoFreeplay: " + e.Message);
+                return false;
+            }
+        }
+
+        var me = Virial.NebulaAPI.CurrentGame!.LocalPlayer;
+        if (startRole.Length > 0 && TrySet(me, startRole))
+            Plugin.Logger.LogMessage($"AutoFreeplay: 自分の役職を {startRole} にしました");
+
+        var others = Virial.Game.Player.AllPlayers.Where(p => p != me).ToArray();
+        for (int i = 0; i < dummyRoles.Length && i < others.Length; i++)
+        {
+            if (TrySet(others[i], dummyRoles[i]))
+                Plugin.Logger.LogMessage($"AutoFreeplay: ダミー（ID {others[i].PlayerId}）の役職を {dummyRoles[i]} にしました");
         }
     }
 
@@ -154,11 +230,15 @@ internal static class AutoFreeplay
             return false;
         }
 
-        var freeplay = GameModes.AllGameModes.ToList().IndexOf(GameModes.FreePlay);
-        if (gameMode.GetValue() != freeplay) gameMode.UpdateValue(freeplay);
-        if (numOfDummies.GetValue() != dummies) numOfDummies.UpdateValue(dummies);
+        var target = GameModes.AllGameModes.ToList().IndexOf(standard ? GameModes.Standard : GameModes.FreePlay);
+        if (gameMode.GetValue() != target) gameMode.UpdateValue(target);
+        if (!standard && numOfDummies.GetValue() != dummies) numOfDummies.UpdateValue(dummies);
+        NoSOptions.OnlyRoles(onlyRoles, "AutoFreeplay");
+        NoSOptions.SetAll(lobbyOptions, "AutoFreeplay");
 
-        Plugin.Logger.LogInfo($"AutoFreeplay: ゲームモードをフリープレイ、ダミーを {dummies} 人に設定しました");
+        Plugin.Logger.LogInfo(standard
+            ? $"AutoFreeplay: ゲームモードを通常モードに設定しました。{ExpectedPlayers} 人そろうのを待ちます"
+            : $"AutoFreeplay: ゲームモードをフリープレイ、ダミーを {dummies} 人に設定しました");
         return true;
     }
 }
