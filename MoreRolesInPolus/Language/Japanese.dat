@@ -48,27 +48,22 @@
 "role.autocracy.name" : "独裁者"
 "role.autocracy.short" : "独"
 "role.autocracy.blurb" : "議場を独裁せよ"
-"role.autocracy.doc" : "タスクターンを強制終了して特別な緊急会議（独裁会議）を発動し、処刑対象を指定できるクルーメイトです。<br>独裁会議では、指定した人物をその日の処刑者にすることができます。<br>ただし、むやみにやると嫌われます。"
+"role.autocracy.doc" : "一度だけ、処刑する人物を自分ひとりで決められるクルーメイトです。<br>タスク中にボタンを押すと独裁会議を開き、会議中なら、自分が投票する前に処刑したい人物を選ぶと、その場で処刑先が決まります。<br>独裁会議では独裁者だけが投票でき、スキップはできません。ただし、むやみにやると嫌われます。"
 "role.autocracy.tips" : "・独裁会議は強力ですが、使いどころを誤るとクルー全体の勝率を下げます。<br>・終盤の確定情報や処刑先が固まった場面で使うと効果的です。<br>・<color=#ff6941>特定の役職</color>が生存している場合、独裁者自身が死亡してしまうかも？"
 
 "role.autocracy.ability.title" : "固有能力 "独裁会議""
-"role.autocracy.ability.main" : "独裁会議を発動すると、通常の議論進行を打ち切って処刑対象を指定できます。<br>独裁会議中はGuesserの能力使用が制限されます。"
-"role.autocracy.ability.autocracy" : "<title>独裁会議</title>タスクターンを強制終了し、独裁会議を開始します。<br>会議中は処刑対象を指定して、その日の処刑結果を確定させます。"
+"role.autocracy.ability.main" : "独裁会議では独裁者だけが投票でき、投票した人物がその日の処刑者になります（スキップ不可・同数でも処刑）。<br>独裁会議中はGuesserの能力使用が制限されます。"
+"role.autocracy.ability.autocracy" : "<title>独裁会議</title>タスク中に使うと、独裁会議を開きます。<br>会議中、自分が投票する前に処刑したい人物のボタンを押すと、その人物への1票で処刑先が決まります（ほかの人の票は取り消されます）。<br>どちらか一度だけ使えます。"
 
 "button.label.autocracy" : "独裁会議"
 
-"options.role.autocracy.detail" : "独裁者は<color=#ff4d4d>タスクターンを強制終了</color>し、<color=#ffd166>独裁会議</color>を発動できます。<br>独裁会議では処刑対象を指定し、<color=#ff4d4d>その日の処刑結果を強制</color>できます。"
+"options.role.autocracy.detail" : "独裁者は一度だけ<color=#ffd166>独裁会議</color>を発動できます。<br>タスク中なら会議を開き、会議中なら自分が投票する前に<color=#ff4d4d>処刑先を指定</color>できます。<br>独裁会議では独裁者だけが投票でき、<color=#ff4d4d>その日の処刑結果を強制</color>できます。"
 
 ## Rebel - Crewmate(Madmate)
 "role.rebel.name" : "レブル"
 "role.rebel.short" : "レブ"
 "role.rebel.blurb" : "理不尽な独裁を食い止めろ"
-"options.role.rebel.detail" : "レブルは<color=#ff4d4d>独裁者と付随して出現</color>する反逆の狂人です。<br>通常はインポスター勝利で勝利し、クルーメイト勝利では敗北します。<br>タスク関連設定を有効にすると、完了タスク数に応じてインポスターを段階的に判明できます。"
-"options.role.rebel.overrideTasks" : "タスク数を役職側で上書きする"
-"options.role.rebel.numOfTasksRequired" : "要求タスク数"
-"options.role.rebel.useMadmateIdentifySettings" : "通常Madmateの判明設定に従う"
-"options.role.rebel.canIdentifyImpostorsByTasks" : "タスク達成でインポスターを判明させる"
-"options.role.rebel.tasksRequiredForIdentify" : "判明に必要な完了タスク数"
+"options.role.rebel.detail" : "レブルは<color=#ff4d4d>独裁者と付随して出現</color>する反逆の狂人です。<br>独裁者と一緒に、レブルの能力を持った狂人が 1 人割り当てられます。<br>独裁会議が開かれたときにレブルが生存していると、独裁者自身が処刑されます。<br>勝利条件やインポスターの判明などは、狂人の設定に従います。"
 
 
 ### junjun Made
