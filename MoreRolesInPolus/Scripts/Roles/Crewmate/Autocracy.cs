@@ -37,6 +37,18 @@ public class Autocracy
     new Ability(player, arguments.GetAsBool(0), arguments.GetAsBool(1));
 
   public static Autocracy MyRole = new();
+
+  // 称号（MyRole を関係する役職に使うので、MyRole より後で登録する）
+  private static readonly bool TitlesRegistered = RegisterTitles();
+
+  private static bool RegisterTitles()
+  {
+    AddonTitles.Register(MyRole, "autocracy", "common1", Virial.Achievements.TrophyLevel.Silver);
+    AddonTitles.Register(MyRole, "autocracy", "another1", Virial.Achievements.TrophyLevel.Silver, true);
+    AddonTitles.Register(MyRole, "autocracy", "another2", Virial.Achievements.TrophyLevel.Silver, true);
+    AddonTitles.Register(MyRole, "autocracy", "challenge", Virial.Achievements.TrophyLevel.Rainbow);
+    return true;
+  }
   DefinedRole[] DefinedRole.AdditionalRoles => [Rebel.MyRole];
 
   bool IAssignableDocument.HasTips => true;
@@ -81,10 +93,27 @@ public class Autocracy
 
     ModAbilityButton? AutocracyButton;
 
+    /// <summary>独裁会議を開いたか。レブルの称号の判定にも使う</summary>
+    public bool HasUsed => Used;
+
+    /// <summary>直前の会議が独裁会議だったか。追放は会議の終了後に起きるので、追放の判定にはこちらを使う</summary>
+    public bool LastMeetingWasAutocracy { get; private set; } = false;
+
+    /// <summary>朕は国家なり: 独裁会議で最後のインポスターを処刑したか（勝敗は試合の終わりに見る）</summary>
+    AchievementToken<bool>? ChallengeToken;
+
     public Ability(GamePlayer player, bool isUsurped, bool used)
       : base(player, isUsurped)
     {
       Used = used;
+
+      if (AmOwner && !isUsurped)
+        ChallengeToken = new(
+          AddonTitles.Id("autocracy", "challenge"),
+          false,
+          (executedLastImpostor, _) =>
+            executedLastImpostor && (NebulaGameManager.Instance?.EndState?.Winners.Test(MyPlayer) ?? false)
+        );
 
       if (AmOwner && !Used)
       {
@@ -299,6 +328,38 @@ public class Autocracy
       Ev.CanGuess = false;
     }
 
-    void OnMeetingEnd(MeetingEndEvent ev) => InvokedSpecialMeeting = false;
+    void OnMeetingEnd(MeetingEndEvent ev)
+    {
+      LastMeetingWasAutocracy = InvokedSpecialMeeting;
+      InvokedSpecialMeeting = false;
+    }
+
+    void OnTaskPhaseStart(TaskPhaseStartEvent ev) => LastMeetingWasAutocracy = false;
+
+    [Local]
+    void OnExiled(PlayerExiledEvent ev)
+    {
+      if (!LastMeetingWasAutocracy || IsUsurped)
+        return;
+
+      var exiled = ev.Player;
+      if (exiled == MyPlayer)
+      {
+        // 暴君の末路: 独裁会議で自分が処刑されるのは、レブルが生きていたときだけ
+        AddonTitles.Gain("autocracy", "another2");
+      }
+      else if (exiled.IsImpostor)
+      {
+        // 鶴の一声
+        AddonTitles.Gain("autocracy", "common1");
+        if (ChallengeToken != null && !GamePlayer.AllPlayers.Any(p => !p.IsDead && p.IsImpostor))
+          ChallengeToken.Value = true;
+      }
+      else if (exiled.IsTrueCrewmate)
+      {
+        // 冤罪の王
+        AddonTitles.Gain("autocracy", "another1");
+      }
+    }
   }
 }

@@ -37,12 +37,18 @@
 "button.label.researcher.track" : "追跡"
 "ui.action.researcher.switch" : "モード切替"
 
-"achievement.researcher.challenge.title" : "深淵に飲み込まれし者の行方は、、、"
-"achievement.researcher.challenge.goal" : "1ターンで調査もしくは追跡を3回行い、次の会議で自分が死ぬ。"
-"achievement.researcher.challenge.cond" : "・能力使用可能最大回数が5回以上のときのみ<br>・対象者が投票によって吊られた場合のみ"
-"achievement.researcher.challenge.flavor" : ""私は怪物にならぬよう、怪物を研究していた。だが、その研究手法がすでに怪物のそれだった、というわけだ。" ―調査報告書のはしがきより"
-"achievement.researcher.challenge.splitted.1" : "深淵に"
-"achievement.researcher.challenge.splitted.3" : "行方は、、、"
+"achievement.moreRolesInPolus.researcher.common1.title" : "現場百遍"
+"achievement.moreRolesInPolus.researcher.common1.goal" : "1試合で調査と追跡を合わせて5回行う。"
+"achievement.moreRolesInPolus.researcher.common2.title" : "張り込み"
+"achievement.moreRolesInPolus.researcher.common2.goal" : "追跡したインポスターが、次の会議で追放される。"
+"achievement.moreRolesInPolus.researcher.common3.title" : "動かぬ証拠"
+"achievement.moreRolesInPolus.researcher.common3.goal" : "調査か追跡をしたインポスターに投票し、追放する。"
+"achievement.moreRolesInPolus.researcher.challenge.title" : "深淵に飲み込まれし者の行方は、、、"
+"achievement.moreRolesInPolus.researcher.challenge.goal" : "1ターンで調査もしくは追跡を3回行い、次の会議で自分が死ぬ。"
+"achievement.moreRolesInPolus.researcher.challenge.cond" : "・能力使用可能最大回数が5回以上のときのみ<br>・対象者が投票によって吊られた場合のみ"
+"achievement.moreRolesInPolus.researcher.challenge.flavor" : ""私は怪物にならぬよう、怪物を研究していた。だが、その研究手法がすでに怪物のそれだった、というわけだ。" ―調査報告書のはしがきより"
+"achievement.moreRolesInPolus.researcher.challenge.splitted.1" : "深淵に"
+"achievement.moreRolesInPolus.researcher.challenge.splitted.3" : "行方は、、、"
 
 ## Autocracy - Crewmate
 "role.autocracy.name" : "独裁者"
@@ -57,6 +63,15 @@
 
 "button.label.autocracy" : "独裁会議"
 
+"achievement.moreRolesInPolus.autocracy.common1.title" : "鶴の一声"
+"achievement.moreRolesInPolus.autocracy.common1.goal" : "独裁会議でインポスターを処刑する。"
+"achievement.moreRolesInPolus.autocracy.another1.title" : "冤罪の王"
+"achievement.moreRolesInPolus.autocracy.another1.goal" : "独裁会議でクルーメイトを処刑する。"
+"achievement.moreRolesInPolus.autocracy.another2.title" : "暴君の末路"
+"achievement.moreRolesInPolus.autocracy.another2.goal" : "独裁会議で、レブルによって自分が処刑される。"
+"achievement.moreRolesInPolus.autocracy.challenge.title" : "朕は国家なり"
+"achievement.moreRolesInPolus.autocracy.challenge.goal" : "独裁会議で最後のインポスターを処刑し、クルーメイトとして勝利する。"
+
 "options.role.autocracy.detail" : "独裁者は一度だけ<color=#ffd166>独裁会議</color>を発動できます。<br>タスク中なら会議を開き、会議中なら自分が投票する前に<color=#ff4d4d>処刑先を指定</color>できます。<br>独裁会議では独裁者だけが投票でき、<color=#ff4d4d>その日の処刑結果を強制</color>できます。"
 
 ## Rebel - Crewmate(Madmate)
@@ -64,6 +79,48 @@
 "role.rebel.short" : "レブ"
 "role.rebel.blurb" : "理不尽な独裁を食い止めろ"
 "options.role.rebel.detail" : "レブルは<color=#ff4d4d>独裁者と付随して出現</color>する反逆の狂人です。<br>独裁者と一緒に、レブルの能力を持った狂人が 1 人割り当てられます。<br>独裁会議が開かれたときにレブルが生存していると、独裁者自身が処刑されます。<br>勝利条件やインポスターの判明などは、狂人の設定に従います。"
+
+"achievement.moreRolesInPolus.rebel.common1.title" : "反骨の火種"
+"achievement.moreRolesInPolus.rebel.common1.goal" : "独裁者が死亡したあとも、最後まで生き残る。"
+"achievement.moreRolesInPolus.rebel.common2.title" : "下剋上"
+"achievement.moreRolesInPolus.rebel.common2.goal" : "独裁会議で、独裁者自身を処刑させる。"
+"achievement.moreRolesInPolus.rebel.another1.title" : "不発の革命"
+"achievement.moreRolesInPolus.rebel.another1.goal" : "独裁者が一度も独裁会議を開かないまま、試合が終わる。"
+"achievement.moreRolesInPolus.rebel.challenge.title" : "レ・ミゼラブル"
+"achievement.moreRolesInPolus.rebel.challenge.goal" : "独裁会議で独裁者を処刑させ、インポスター陣営として勝利する。"
+
+## Escapist - Crewmate
+"role.escapist.name" : "エスケーピスト"
+"role.escapist.short" : "逃"
+"role.escapist.blurb" : "誰の家に逃げ込むか、それが問題だ"
+"role.escapist.doc" : "会議中に逃げ込み先を選び、次のタスク中はキルされなくなるクルーメイトです。<br>ただし、逃げ込み先がインポスターなら追放のときに死亡し、逃げ込み先が追放されたりキルされたりすると一緒に死亡します。"
+"role.escapist.tips" : "・追放のときに生き残っていれば、逃げ込み先はインポスターではありません。<br>・タスクの画面を開いているあいだは守られません。<br>・逃げ込んでいるあいだは視界が狭くなります。"
+"state.escapist.caught" : "逃亡失敗"
+"state.escapist.exiledTogether" : "道連れ"
+"state.escapist.killedTogether" : "連座"
+
+"role.escapist.ability.title" : "固有能力 "逃亡""
+"role.escapist.ability.main" : "逃げ込んでいるあいだはキルされず、アドミンとバイタルにも映りません。"
+"role.escapist.ability.escape" : "<title>逃亡</title>会議中、逃げ込みたい人物のボタンを押すと、次のタスク中はその人物のところへ逃げ込みます。<br>逃げ込み先がインポスターなら追放のときに死亡し、逃げ込み先が追放されると一緒に追放され、逃げ込み先がキルされると一緒に死亡します。<br>設定によっては、続けて同じ人物には逃げ込めません。"
+
+"options.role.escapist.detail" : "エスケーピストは会議中に<color=#f096b4>逃げ込み先</color>を選び、次のタスク中は<color=#f096b4>キルされなくなります</color>。<br>逃げ込み先がインポスターなら追放のときに死亡し、逃げ込み先が追放されると一緒に追放され、逃げ込み先がキルされると一緒に死亡します。<br>タスクの画面を開いているあいだは守られず、逃げ込んでいるあいだは視界が狭くなります。"
+"options.role.escapist.numOfEscapes" : "逃げ込める回数"
+"options.role.escapist.canEscapeToSameTargetInARow" : "続けて同じ人物に逃げ込める"
+"options.role.escapist.escapingVision" : "逃げ込み中の視界"
+"options.role.escapist.hideFromAdminAndVitals" : "逃げ込み中はアドミンとバイタルに映らない"
+
+"achievement.moreRolesInPolus.escapist.common1.title" : "仮初の宿"
+"achievement.moreRolesInPolus.escapist.common1.goal" : "逃げ込んだあと、次の会議まで生き残る。"
+"achievement.moreRolesInPolus.escapist.common2.title" : "間一髪"
+"achievement.moreRolesInPolus.escapist.common2.goal" : "逃げ込んでいるあいだに、キルを防ぐ。"
+"achievement.moreRolesInPolus.escapist.common3.title" : "渡り鳥"
+"achievement.moreRolesInPolus.escapist.common3.goal" : "1試合で3回逃げ込み、3回とも次の会議まで生き残る。"
+"achievement.moreRolesInPolus.escapist.another1.title" : "軒を貸して母屋ごと"
+"achievement.moreRolesInPolus.escapist.another1.goal" : "逃げ込み先がキルされ、連座で死亡する。"
+"achievement.moreRolesInPolus.escapist.another2.title" : "一蓮托生"
+"achievement.moreRolesInPolus.escapist.another2.goal" : "逃げ込み先が追放され、道連れになる。"
+"achievement.moreRolesInPolus.escapist.challenge.title" : "逃げるは恥だが役に立つ"
+"achievement.moreRolesInPolus.escapist.challenge.goal" : "1試合で2回以上キルを防ぎ、最後まで生き残ってクルーメイトとして勝利する。"
 
 
 ### junjun Made
