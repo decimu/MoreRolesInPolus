@@ -211,41 +211,18 @@ public class Escapist
       EscapeTarget = null;
       IsDoingTask = false;
 
+      // 投票欄のボタンは NoS の仕組みに載せる。ゲッサーなどほかの役職のボタンと同じ場所を共有し、右クリックで切り替えられる
       if (AmOwner && LeftUses > 0 && !MyPlayer.IsDead)
-        CreateMeetingButtons();
+        NebulaAPI
+          .CurrentGame?.GetModule<MeetingPlayerButtonManager>()
+          ?.RegisterMeetingAction(
+            new(meetingSprite, state => Escape(state.MyPlayer), state => CanEscapeInMeeting(state.MyPlayer))
+          );
     }
 
-    /// <summary>各プレイヤーの投票欄に置く、逃げ込み先を選ぶボタン</summary>
-    readonly List<(GamePlayer Target, GameObject Button)> MeetingButtons = [];
-
-    /// <summary>独裁者と同じく、議論中にも押せるよう CancelButton を複製して置く</summary>
-    void CreateMeetingButtons()
+    void Escape(GamePlayer target)
     {
-      MeetingButtons.Clear();
-      foreach (var area in MeetingHud.Instance.playerStates)
-      {
-        var target = NebulaGameManager.Instance?.GetPlayer(area.PlayerId.Value);
-        if (target == null || target.AmOwner)
-          continue;
-
-        var template = area.Buttons.transform.Find("CancelButton").gameObject;
-        var obj = UnityEngine.Object.Instantiate(template, area.transform);
-        obj.name = "EscapistButton";
-        obj.transform.localPosition = MeetingHudExtension.VoteAreaPlayerIconPos;
-        obj.GetComponent<SpriteRenderer>().sprite = meetingSprite.GetSprite();
-
-        var button = obj.GetComponent<PassiveButton>();
-        button.OnClick.RemoveAllListeners();
-        button.OnClick.AddListener(() => OnClickMeetingButton(target));
-
-        obj.SetActive(false);
-        MeetingButtons.Add((target, obj));
-      }
-    }
-
-    void OnClickMeetingButton(GamePlayer target)
-    {
-      if (!CanUseMeetingButtons() || !CanEscapeTo(target) || !MeetingHudExtension.CanInvokeSomeAction)
+      if (!CanEscapeInMeeting(target))
         return;
       if (IsUsurped)
       {
@@ -255,44 +232,17 @@ public class Escapist
       RpcEscape(MyPlayer, target.PlayerId);
     }
 
-    bool CanUseMeetingButtons() =>
-      EscapeTarget == null
-      && LeftUses > 0
-      && !MyPlayer.IsDead
-      && MeetingHud.Instance
-      && MeetingHud.Instance.CurrentState
-        is MeetingHud.MeetingStates.Discussion
-          or MeetingHud.MeetingStates.NotVoted
-          or MeetingHud.MeetingStates.Voted;
+    bool CanEscapeInMeeting(GamePlayer target) =>
+      EscapeTarget == null && LeftUses > 0 && !MyPlayer.IsDead && !target.AmOwner && CanEscapeTo(target);
 
     [Local]
     void OnGameUpdate(GameUpdateEvent ev)
     {
-      UpdateMeetingButtons();
-
       // タスクのミニゲームを開いているあいだは守られない。開け閉めしたらすぐ全員に知らせる
       bool doingTask =
         IsEscaping && Minigame.Instance && Minigame.Instance.MyTask != null;
       if (doingTask != IsDoingTask)
         RpcSetDoingTask(MyPlayer, doingTask);
-    }
-
-    void UpdateMeetingButtons()
-    {
-      if (MeetingButtons.Count == 0)
-        return;
-      if (!MeetingHud.Instance)
-      {
-        MeetingButtons.Clear();
-        return;
-      }
-
-      bool canUse = CanUseMeetingButtons();
-      foreach (var (target, button) in MeetingButtons)
-      {
-        if (button)
-          button.SetActive(canUse && CanEscapeTo(target));
-      }
     }
 
     bool CanEscapeTo(GamePlayer target) =>

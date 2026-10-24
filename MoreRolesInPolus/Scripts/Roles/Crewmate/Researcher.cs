@@ -391,7 +391,8 @@ public class Researcher
     [Local]
     void OnOpenDoor(Virial.Events.Game.Door.PlayerOpenDoorEvent ev)
     {
-      var room = NebulaAPI.CurrentGame?.CurrentMap?.GetRoomName(ev.Door.Position, false, false, false);
+      // ドアは部屋の境目にあり、位置から部屋を調べると「部屋外」になるので、ドア自身が持つ部屋を使う
+      var room = AmongUsUtil.ToDisplayString(ev.Door.VanillaObject.Room);
       allActions.Add(new(Time.time, ev.Player, string.IsNullOrEmpty(room) ? "どこかのドアを開けたようだ..." : $"{room}のドアを開けたようだ..."));
     }
 

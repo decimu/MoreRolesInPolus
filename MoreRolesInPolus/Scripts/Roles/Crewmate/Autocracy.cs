@@ -151,6 +151,9 @@ public class Autocracy
       Used = true;
       InvokedSpecialMeeting = true;
 
+      if (MeetingHud.Instance)
+        MeetingHud.Instance.StartCoroutine(CoPlayIntro(MeetingHud.Instance).WrapToIl2Cpp());
+
       if (targetId != NoTarget)
       {
         // 会議中の発動：議論を打ち切って投票時間に移る（スキップ不可・同数でも追放）
@@ -182,6 +185,38 @@ public class Autocracy
         VoteWhenVotingStarts(MyPlayer.PlayerId);
       else if (targetId != NoTarget)
         VoteWhenVotingStarts(targetId);
+    }
+
+    /// <summary>
+    /// 独裁会議の開始演出。ジャスティス会議と同じ NoS の部品（黒い帯と文字の打ち出し）を使い、
+    /// 画面のふちを独裁者の色で光らせてから、会議のタイトルを「独裁会議」にする
+    /// </summary>
+    static System.Collections.IEnumerator CoPlayIntro(MeetingHud meetingHud)
+    {
+      NebulaAsset.PlaySE(NebulaAudioClip.Justice1);
+      var color = ((DefinedAssignable)MyRole).Color;
+      meetingHud.StartCoroutine(CoFlash(color).WrapToIl2Cpp());
+
+      var introObj = UnityHelper.CreateObject("AutocracyIntro", meetingHud.transform, UnityEngine.Vector3.zero);
+      var text = System.Random.Shared.NextSingle() < 0.1f ? "L'Etat, c'est moi." : "Autocracy meeting begins...";
+      meetingHud.StartCoroutine(MeetingHudModAnimations.CoAnimBackLine(introObj, 3.5f, 1.25f, 6.9f).WrapToIl2Cpp());
+      meetingHud.StartCoroutine(MeetingHudModAnimations.CoAnimIntroText(introObj, text, 0.078f, 0f).WrapToIl2Cpp());
+
+      yield return Effects.Wait(3.5f);
+      if (introObj)
+        UnityEngine.Object.Destroy(introObj);
+      if (meetingHud)
+        meetingHud.TitleText.text = Language.Translate("role.autocracy.meetingTitle");
+    }
+
+    static System.Collections.IEnumerator CoFlash(Virial.Color color)
+    {
+      yield return Effects.Wait(0.15f);
+      for (int i = 0; i < 2; i++)
+      {
+        AmongUsUtil.PlayCustomFlash(color, 0.2f, 0.2f, 0.3f, 0.6f);
+        yield return Effects.Wait(1.3f);
+      }
     }
 
     void VoteWhenVotingStarts(byte targetId)
@@ -220,45 +255,20 @@ public class Autocracy
         }
       }
 
+      // 会議中の発動に使う投票欄のボタンは NoS の仕組みに載せる。
+      // ゲッサーなどほかの役職のボタンと同じ場所を共有し、右クリックで切り替えられる
+      // （NoS のボタンは投票時間にだけ出るが、多くの村は議論時間が 0 秒で、投票時間が実質の議論時間になっている）
       if (!Used)
-        CreateDiscussionButtons();
-    }
-
-    /// <summary>会議中の発動に使う、各プレイヤーの投票欄のボタン</summary>
-    readonly List<(GamePlayer Target, GameObject Button)> DiscussionButtons = [];
-
-    /// <summary>
-    /// 会議中の発動：処刑先のボタンを押す。議論中か、投票時間中で自分がまだ投票していない間だけ使える。
-    /// （多くの村は議論時間が 0 秒で、投票時間が実質の議論時間になっているため）
-    /// NoS の MeetingPlayerButtonManager は議論中に押せないため、同じ作り方で独自に置く。
-    /// </summary>
-    void CreateDiscussionButtons()
-    {
-      DiscussionButtons.Clear();
-      foreach (var area in MeetingHud.Instance.playerStates)
-      {
-        var target = NebulaGameManager.Instance?.GetPlayer(area.PlayerId.Value);
-        if (target == null || target.AmOwner)
-          continue;
-
-        var template = area.Buttons.transform.Find("CancelButton").gameObject;
-        var obj = UnityEngine.Object.Instantiate(template, area.transform);
-        obj.name = "AutocracyButton";
-        obj.transform.localPosition = MeetingHudExtension.VoteAreaPlayerIconPos;
-        obj.GetComponent<SpriteRenderer>().sprite = meetingSprite.GetSprite();
-
-        var button = obj.GetComponent<PassiveButton>();
-        button.OnClick.RemoveAllListeners();
-        button.OnClick.AddListener(() => OnClickDiscussionButton(target));
-
-        obj.SetActive(false);
-        DiscussionButtons.Add((target, obj));
-      }
+        NebulaAPI
+          .CurrentGame?.GetModule<MeetingPlayerButtonManager>()
+          ?.RegisterMeetingAction(
+            new(meetingSprite, state => OnClickDiscussionButton(state.MyPlayer), state => CanTarget(state.MyPlayer))
+          );
     }
 
     void OnClickDiscussionButton(GamePlayer target)
     {
-      if (!CanUseDiscussionButtons() || target.IsDead || !MeetingHudExtension.CanInvokeSomeAction)
+      if (!CanTarget(target) || !MeetingHudExtension.CanInvokeSomeAction)
         return;
       if (IsUsurped)
       {
@@ -268,33 +278,17 @@ public class Autocracy
       RpcAutocracyMeeting(MyPlayer, target.PlayerId);
     }
 
-    bool CanUseDiscussionButtons() =>
+    /// <summary>自分が投票する前で、まだ独裁会議になっていない間だけ使える</summary>
+    bool CanTarget(GamePlayer target) =>
       !Used
       && !MyPlayer.IsDead
+      && !target.IsDead
+      && !target.AmOwner
       && MeetingHud.Instance
       && MeetingHud.Instance.CurrentState
         is MeetingHud.MeetingStates.Discussion
           or MeetingHud.MeetingStates.NotVoted
       && !MeetingHudExtension.ExileEvenIfTie;
-
-    [Local]
-    void OnGameUpdate(GameUpdateEvent ev)
-    {
-      if (DiscussionButtons.Count == 0)
-        return;
-      if (!MeetingHud.Instance)
-      {
-        DiscussionButtons.Clear();
-        return;
-      }
-
-      bool canUse = CanUseDiscussionButtons();
-      foreach (var (target, button) in DiscussionButtons)
-      {
-        if (button)
-          button.SetActive(canUse && !target.IsDead);
-      }
-    }
 
     [OnlyHost]
     void OnVote(PlayerVoteCastEvent ev)
