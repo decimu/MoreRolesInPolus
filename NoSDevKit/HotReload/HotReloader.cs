@@ -29,7 +29,8 @@ internal static class HotReloader
     /// <summary>適用中のフック。キーはメソッドの FullName</summary>
     private static readonly Dictionary<string, (ILHook Hook, string BodySignature)> hooks = [];
 
-    private static string WorkDir => Path.Combine(Paths.CachePath, "NoSDevKit");
+    /// <summary>複数起動したゲームが同じ hot_N.dll に書き込まないよう、起動順ごとに分ける</summary>
+    private static string WorkDir => Path.Combine(Paths.CachePath, "NoSDevKit", Instance.Index.ToString());
 
     public static void Start(string addonDir)
     {
