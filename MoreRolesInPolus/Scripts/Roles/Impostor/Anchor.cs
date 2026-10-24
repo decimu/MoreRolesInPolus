@@ -45,7 +45,11 @@ namespace MoreRolesInPolus.Roles.Imposter
   /// Anchorロールの情報を定義するクラスです。
   /// </summary>
   [NebulaRPCHolder]
-  public class Anchor : DefinedSingleAbilityRoleTemplate<Anchor.Ability>, DefinedRole, HasCitation
+  public class Anchor
+    : DefinedSingleAbilityRoleTemplate<Anchor.Ability>,
+      DefinedRole,
+      HasCitation,
+      IAssignableDocument
   {
     /// <summary>
     /// Anchorロール情報のコンストラクタです。ここで役職の内部名、色、割り当てのカテゴリ、所属陣営、およびオプションを設定します。
@@ -63,6 +67,26 @@ namespace MoreRolesInPolus.Roles.Imposter
     }
 
     Citation? HasCitation.Citation => Citations.TheOtherRoles;
+
+    bool IAssignableDocument.HasTips => true;
+    bool IAssignableDocument.HasAbility => true;
+
+    IEnumerable<AssignableDocumentImage> IAssignableDocument.GetDocumentImages()
+    {
+      yield return new(documentPlaceSprite, "role.anchor.ability.place");
+      yield return new(documentCameraSprite, "role.anchor.ability.camera");
+    }
+
+    IEnumerable<AssignableDocumentReplacement> IAssignableDocument.GetDocumentReplacements()
+    {
+      yield return new("%NUM%", numOfJacksOption.GetValue().ToString());
+    }
+
+    // 役職のヘルプに出すボタンの画像（設置もカメラも同じびっくり箱の絵）
+    static readonly Image documentPlaceSprite = NebulaAPI
+      .AddonAsset.GetResource("PlaceJackInTheBoxButton.png")!
+      .AsImage(115f)!;
+    static readonly Image documentCameraSprite = documentPlaceSprite;
 
     Image? DefinedAssignable.IconImage => iconImage;
     static readonly Image iconImage = NebulaAPI
