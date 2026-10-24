@@ -1,126 +1,220 @@
-### Toa Made
+### Toa Made
+
+## Anchor - Impostor
+
+"role.anchor.name" : "潜望者"
+"role.anchor.short" : "潜"
+"role.anchor.blurb" : "混乱の海を航海せよ"
+"role.anchor.doc" : "特製のベント（びっくり箱）を設置、使用できます。<br>びっくり箱はカメラにもなるので、設置箇所は慎重に検討しましょう。"
+"options.role.anchor.placeCoolDown" : "びっくり箱設置クールダウン"
+"options.role.anchor.cameraCoolDown" : "びっくり箱カメラクールダウン"
+"options.role.anchor.cameraDuration" : "びっくり箱カメラ使用時間"
+"options.role.anchor.numOfJacks" : "設置可能なびっくり箱の数"
+"button.label.place" : "設置"
+"button.label.camera" : "潜望"
+"button.label.left" : "左へ"
+"button.label.right" : "右へ"
+"ui.action.jack.place" : "びっくり箱を設置することができます。"
+
+## Researcher - Crewmate
+"role.researcher.name" : "リサーチャー"
+"role.researcher.blurb" : "辿った先に見える真実は希望か、絶望か"
+"role.researcher.short" : "リサ"
+"role.researcher.doc" : "他のプレイヤーの行動を追跡、調査できるクルーメイトです。"
+"role.researcher.tips" : "・使用する能力は%KEY%キーで切り替えられます。<br>・調査、追跡を行うには<var>%SEC%</var>秒かかり、能力ボタン使用中に対象者から離れてしまうと中断されてしまいます。"
+
+"role.researcher.ability.title" : "固有能力 "事実の告発""
+"role.researcher.ability.main" : "対象者を追跡、過去ログを取得することができます。"
+"role.researcher.ability.survey" : "<title>調査</title>調査を行うことで、能力を使用した時点から<var>%LOGSEC%</var>秒前までの対象者の行動を確認できます。"
+"role.researcher.ability.track" : "<title>追跡</title>追跡を行うことで、能力を使用した時点から次の緊急会議までの対象者の行動を確認できます。"
+
+"options.role.researcher.detail" : "リサーチャーは他のプレイヤーの行動を追跡、調査できます。"
+"options.role.researcher.surveyCooldown" : "調査・追跡クールダウン"
+"options.role.researcher.surveyDuration" : "調査・追跡にかかる時間"
+"options.role.researcher.surveytime" : "遡及可能時間（調査モード時）"
+"options.role.researcher.maxsurvey" : "調査・追跡可能回数（共通）"
+"button.label.researcher.survey" : "調査"
+"button.label.researcher.track" : "追跡"
+"ui.action.researcher.switch" : "モード切替"
+
+"achievement.moreRolesInPolus.researcher.common1.title" : "現場百遍"
+"achievement.moreRolesInPolus.researcher.common1.goal" : "1試合で調査と追跡を合わせて5回行う。"
+"achievement.moreRolesInPolus.researcher.common2.title" : "張り込み"
+"achievement.moreRolesInPolus.researcher.common2.goal" : "追跡したインポスターが、次の会議で追放される。"
+"achievement.moreRolesInPolus.researcher.common3.title" : "動かぬ証拠"
+"achievement.moreRolesInPolus.researcher.common3.goal" : "調査か追跡をしたインポスターに投票し、追放する。"
+"achievement.moreRolesInPolus.researcher.challenge.title" : "深淵に飲み込まれし者の行方は、、、"
+"achievement.moreRolesInPolus.researcher.challenge.goal" : "1ターンで調査もしくは追跡を3回行い、次の会議で自分が死ぬ。"
+"achievement.moreRolesInPolus.researcher.challenge.cond" : "・能力使用可能最大回数が5回以上のときのみ<br>・対象者が投票によって吊られた場合のみ"
+"achievement.moreRolesInPolus.researcher.challenge.flavor" : ""私は怪物にならぬよう、怪物を研究していた。だが、その研究手法がすでに怪物のそれだった、というわけだ。" ―調査報告書のはしがきより"
+"achievement.moreRolesInPolus.researcher.challenge.splitted.1" : "深淵に"
+"achievement.moreRolesInPolus.researcher.challenge.splitted.3" : "行方は、、、"
+
+## Autocracy - Crewmate
+"role.autocracy.name" : "独裁者"
+"role.autocracy.short" : "独"
+"role.autocracy.blurb" : "議場を独裁せよ"
+"role.autocracy.doc" : "一度だけ、処刑する人物を自分ひとりで決められるクルーメイトです。<br>タスク中にボタンを押すと独裁会議を開き、会議中なら、自分が投票する前に処刑したい人物を選ぶと、その場で処刑先が決まります。<br>独裁会議では独裁者だけが投票でき、スキップはできません。ただし、むやみにやると嫌われます。"
+"role.autocracy.tips" : "・独裁会議は強力ですが、使いどころを誤るとクルー全体の勝率を下げます。<br>・終盤の確定情報や処刑先が固まった場面で使うと効果的です。<br>・<color=#ff6941>特定の役職</color>が生存している場合、独裁者自身が死亡してしまうかも？"
+
+"role.autocracy.ability.title" : "固有能力 "独裁会議""
+"role.autocracy.ability.main" : "独裁会議では独裁者だけが投票でき、投票した人物がその日の処刑者になります（スキップ不可・同数でも処刑）。<br>独裁会議中はGuesserの能力使用が制限されます。"
+"role.autocracy.ability.autocracy" : "<title>独裁会議</title>タスク中に使うと、独裁会議を開きます。<br>会議中、自分が投票する前に処刑したい人物のボタンを押すと、その人物への1票で処刑先が決まります（ほかの人の票は取り消されます）。<br>どちらか一度だけ使えます。"
+
+"button.label.autocracy" : "独裁会議"
+"role.autocracy.meetingTitle" : "独裁会議"
+
+"achievement.moreRolesInPolus.autocracy.common1.title" : "鶴の一声"
+"achievement.moreRolesInPolus.autocracy.common1.goal" : "独裁会議でインポスターを処刑する。"
+"achievement.moreRolesInPolus.autocracy.another1.title" : "冤罪の王"
+"achievement.moreRolesInPolus.autocracy.another1.goal" : "独裁会議でクルーメイトを処刑する。"
+"achievement.moreRolesInPolus.autocracy.another2.title" : "暴君の末路"
+"achievement.moreRolesInPolus.autocracy.another2.goal" : "独裁会議で、レブルによって自分が処刑される。"
+"achievement.moreRolesInPolus.autocracy.challenge.title" : "朕は国家なり"
+"achievement.moreRolesInPolus.autocracy.challenge.goal" : "独裁会議で最後のインポスターを処刑し、クルーメイトとして勝利する。"
+
+"options.role.autocracy.detail" : "独裁者は一度だけ<color=#ffd166>独裁会議</color>を発動できます。<br>タスク中なら会議を開き、会議中なら自分が投票する前に<color=#ff4d4d>処刑先を指定</color>できます。<br>独裁会議では独裁者だけが投票でき、<color=#ff4d4d>その日の処刑結果を強制</color>できます。"
+
+## Rebel - Crewmate(Madmate)
+"role.rebel.name" : "レブル"
+"role.rebel.short" : "レブ"
+"role.rebel.blurb" : "理不尽な独裁を食い止めろ"
+"options.role.rebel.detail" : "レブルは<color=#ff4d4d>独裁者と付随して出現</color>する反逆の狂人です。<br>独裁者と一緒に、レブルの能力を持った狂人が 1 人割り当てられます。<br>独裁会議が開かれたときにレブルが生存していると、独裁者自身が処刑されます。<br>勝利条件やインポスターの判明などは、狂人の設定に従います。"
+
+"achievement.moreRolesInPolus.rebel.common1.title" : "反骨の火種"
+"achievement.moreRolesInPolus.rebel.common1.goal" : "独裁者が死亡したあとも、最後まで生き残る。"
+"achievement.moreRolesInPolus.rebel.common2.title" : "下剋上"
+"achievement.moreRolesInPolus.rebel.common2.goal" : "独裁会議で、独裁者自身を処刑させる。"
+"achievement.moreRolesInPolus.rebel.another1.title" : "不発の革命"
+"achievement.moreRolesInPolus.rebel.another1.goal" : "独裁者が一度も独裁会議を開かないまま、試合が終わる。"
+"achievement.moreRolesInPolus.rebel.challenge.title" : "レ・ミゼラブル"
+"achievement.moreRolesInPolus.rebel.challenge.goal" : "独裁会議で独裁者を処刑させ、インポスター陣営として勝利する。"
+
+## Escapist - Crewmate
+"role.escapist.name" : "エスケーピスト"
+"role.escapist.short" : "逃"
+"role.escapist.blurb" : "誰の家に逃げ込むか、それが問題だ"
+"role.escapist.doc" : "会議中に逃げ込み先を選び、次のタスク中はキルされなくなるクルーメイトです。<br>ただし、逃げ込み先がインポスターなら追放のときに死亡し、逃げ込み先が追放されたりキルされたりすると一緒に死亡します。"
+"role.escapist.tips" : "・追放のときに生き残っていれば、逃げ込み先はインポスターではありません。<br>・タスクの画面を開いているあいだは守られません。<br>・逃げ込んでいるあいだは視界が狭くなります。"
+"state.escapist.caught" : "逃亡失敗"
+"state.escapist.exiledTogether" : "道連れ"
+"state.escapist.killedTogether" : "連座"
+
+"role.escapist.ability.title" : "固有能力 "逃亡""
+"role.escapist.ability.main" : "逃げ込んでいるあいだはキルされず、アドミンとバイタルにも映りません。"
+"role.escapist.ability.escape" : "<title>逃亡</title>会議中、逃げ込みたい人物のボタンを押すと、次のタスク中はその人物のところへ逃げ込みます。<br>逃げ込み先がインポスターなら追放のときに死亡し、逃げ込み先が追放されると一緒に追放され、逃げ込み先がキルされると一緒に死亡します。<br>設定によっては、続けて同じ人物には逃げ込めません。"
+
+"options.role.escapist.detail" : "エスケーピストは会議中に<color=#f096b4>逃げ込み先</color>を選び、次のタスク中は<color=#f096b4>キルされなくなります</color>。<br>逃げ込み先がインポスターなら追放のときに死亡し、逃げ込み先が追放されると一緒に追放され、逃げ込み先がキルされると一緒に死亡します。<br>タスクの画面を開いているあいだは守られず、逃げ込んでいるあいだは視界が狭くなります。"
+"options.role.escapist.numOfEscapes" : "逃げ込める回数"
+"options.role.escapist.canEscapeToSameTargetInARow" : "続けて同じ人物に逃げ込める"
+"options.role.escapist.escapingVision" : "逃げ込み中の視界"
+"options.role.escapist.hideFromAdminAndVitals" : "逃げ込み中はアドミンとバイタルに映らない"
+
+"achievement.moreRolesInPolus.escapist.common1.title" : "仮初の宿"
+"achievement.moreRolesInPolus.escapist.common1.goal" : "逃げ込んだあと、次の会議まで生き残る。"
+"achievement.moreRolesInPolus.escapist.common2.title" : "間一髪"
+"achievement.moreRolesInPolus.escapist.common2.goal" : "逃げ込んでいるあいだに、キルを防ぐ。"
+"achievement.moreRolesInPolus.escapist.common3.title" : "渡り鳥"
+"achievement.moreRolesInPolus.escapist.common3.goal" : "1試合で3回逃げ込み、3回とも次の会議まで生き残る。"
+"achievement.moreRolesInPolus.escapist.another1.title" : "軒を貸して母屋ごと"
+"achievement.moreRolesInPolus.escapist.another1.goal" : "逃げ込み先がキルされ、連座で死亡する。"
+"achievement.moreRolesInPolus.escapist.another2.title" : "一蓮托生"
+"achievement.moreRolesInPolus.escapist.another2.goal" : "逃げ込み先が追放され、道連れになる。"
+"achievement.moreRolesInPolus.escapist.challenge.title" : "逃げるは恥だが役に立つ"
+"achievement.moreRolesInPolus.escapist.challenge.goal" : "1試合で2回以上キルを防ぎ、最後まで生き残ってクルーメイトとして勝利する。"
+
+## MatchGirl - Crewmate
+"role.matchGirl.name" : "マッチガール"
+"role.matchGirl.short" : "マ"
+"role.matchGirl.blurb" : "最後の一本が燃え尽きるまで"
+"role.matchGirl.doc" : "会議中にもタスク中にもマッチを灯せるクルーメイトです。<br>マッチを灯した相手がインポスターなら、次の会議までそのインポスターのキルはすべて失敗します。<br>ただし、マッチを使い切ると凍死します。"
+"role.matchGirl.tips" : "・マッチを灯した相手がインポスターだったかは、知らされません。<br>・マッチを灯された人は、そのターンの停電中、周りが明るくなります。<br>・タスクを進めると、マッチを補充できます。<br>・キルされた死体が通報されると、最後にマッチを灯した相手が全員に知らされます。"
+"role.matchGirl.ability.title" : "固有能力 "マッチ""
+"role.matchGirl.ability.main" : "マッチを灯した相手がインポスターなら、幻を見せてキルを封じます。"
+"role.matchGirl.ability.meeting" : "<title>会議中に灯す</title>会議中、灯したい人物のボタンを押します。1回の会議で何人にでも使えます。<br>灯した相手がインポスターなら、次のタスク中ずっとキルが失敗します。"
+"role.matchGirl.ability.task" : "<title>タスク中に灯す</title>近くにいる人物にマッチを灯します。<br>灯した相手がインポスターなら、次の会議までキルが失敗します。"
+"role.matchGirl.ui.reportTitle" : "凍えた手に残っていたもの"
+"role.matchGirl.ui.reportContent" : "マッチガールが最後にマッチを灯した相手: %PLAYER%"
+"state.matchGirl.frozen" : "凍死"
+"button.label.matchGirl" : "マッチ"
+
+"options.role.matchGirl.detail" : "マッチガールは、会議中にもタスク中にも<color=#c8aae6>マッチ</color>を灯せます。<br>灯した相手がインポスターなら、次の会議までそのインポスターの<color=#ff4d4d>キルはすべて失敗</color>します。<br>マッチを使い切ると凍死します。"
+"options.role.matchGirl.numOfMatches" : "マッチの本数"
+"options.role.matchGirl.lightCooldown" : "タスク中に灯すときのクールダウン"
+"options.role.matchGirl.tasksPerMatch" : "マッチ1本の補充に必要なタスクの数"
+"options.role.matchGirl.noRefill" : "補充しない"
+"options.role.matchGirl.maxMatches" : "補充で持てるマッチの上限"
+"options.role.matchGirl.glowSize" : "停電中に光る範囲"
 
-## Anchor - Impostor
-
-"role.anchor.name" : "潜望者"
-"role.anchor.short" : "潜"
-"role.anchor.blurb" : "混乱の海を航海せよ"
-"role.anchor.doc" : "特製のベント（びっくり箱）を設置、使用できます。<br>びっくり箱はカメラにもなるので、設置箇所は慎重に検討しましょう。"
-"options.role.anchor.placeCoolDown" : "びっくり箱設置クールダウン"
-"options.role.anchor.cameraCoolDown" : "びっくり箱カメラクールダウン"
-"options.role.anchor.cameraDuration" : "びっくり箱カメラ使用時間"
-"options.role.anchor.numOfJacks" : "設置可能なびっくり箱の数"
-"button.label.place" : "設置"
-"button.label.camera" : "潜望"
-"button.label.left" : "左へ"
-"button.label.right" : "右へ"
-"ui.action.jack.place" : "びっくり箱を設置することができます。"
-
-## Researcher - Crewmate
-"role.researcher.name" : "リサーチャー"
-"role.researcher.blurb" : "辿った先に見える真実は希望か、絶望か"
-"role.researcher.short" : "リサ"
-"role.researcher.doc" : "他のプレイヤーの行動を追跡、調査できるクルーメイトです。"
-"role.researcher.tips" : "・使用する能力は%KEY%キーで切り替えられます。<br>・調査、追跡を行うには<var>%SEC%</var>秒かかり、能力ボタン使用中に対象者から離れてしまうと中断されてしまいます。"
-
-"role.researcher.ability.title" : "固有能力 "事実の告発""
-"role.researcher.ability.main" : "対象者を追跡、過去ログを取得することができます。"
-"role.researcher.ability.survey" : "<title>調査</title>調査を行うことで、能力を使用した時点から<var>%LOGSEC%</var>秒前までの対象者の行動を確認できます。"
-"role.researcher.ability.track" : "<title>追跡</title>追跡を行うことで、能力を使用した時点から次の緊急会議までの対象者の行動を確認できます。"
-
-"options.role.researcher.detail" : "リサーチャーは他のプレイヤーの行動を追跡、調査できます。"
-"options.role.researcher.surveyCooldown" : "調査・追跡クールダウン"
-"options.role.researcher.surveyDuration" : "調査・追跡にかかる時間"
-"options.role.researcher.surveytime" : "遡及可能時間（調査モード時）"
-"options.role.researcher.maxsurvey" : "調査・追跡可能回数（共通）"
-"button.label.researcher.survey" : "調査"
-"button.label.researcher.track" : "追跡"
-"ui.action.researcher.switch" : "モード切替"
-
-"achievement.researcher.challenge.title" : "深淵に飲み込まれし者の行方は、、、"
-"achievement.researcher.challenge.goal" : "1ターンで調査もしくは追跡を3回行い、次の会議で自分が死ぬ。"
-"achievement.researcher.challenge.cond" : "・能力使用可能最大回数が5回以上のときのみ<br>・対象者が投票によって吊られた場合のみ"
-"achievement.researcher.challenge.flavor" : ""私は怪物にならぬよう、怪物を研究していた。だが、その研究手法がすでに怪物のそれだった、というわけだ。" ―調査報告書のはしがきより"
-"achievement.researcher.challenge.splitted.1" : "深淵に"
-"achievement.researcher.challenge.splitted.3" : "行方は、、、"
-
-## Autocracy - Crewmate
-"role.autocracy.name" : "独裁者"
-"role.autocracy.short" : "独"
-"role.autocracy.blurb" : "議場を独裁せよ"
-"role.autocracy.doc" : "一度だけ、処刑する人物を自分ひとりで決められるクルーメイトです。<br>タスク中にボタンを押すと独裁会議を開き、会議中なら、自分が投票する前に処刑したい人物を選ぶと、その場で処刑先が決まります。<br>独裁会議では独裁者だけが投票でき、スキップはできません。ただし、むやみにやると嫌われます。"
-"role.autocracy.tips" : "・独裁会議は強力ですが、使いどころを誤るとクルー全体の勝率を下げます。<br>・終盤の確定情報や処刑先が固まった場面で使うと効果的です。<br>・<color=#ff6941>特定の役職</color>が生存している場合、独裁者自身が死亡してしまうかも？"
-
-"role.autocracy.ability.title" : "固有能力 "独裁会議""
-"role.autocracy.ability.main" : "独裁会議では独裁者だけが投票でき、投票した人物がその日の処刑者になります（スキップ不可・同数でも処刑）。<br>独裁会議中はGuesserの能力使用が制限されます。"
-"role.autocracy.ability.autocracy" : "<title>独裁会議</title>タスク中に使うと、独裁会議を開きます。<br>会議中、自分が投票する前に処刑したい人物のボタンを押すと、その人物への1票で処刑先が決まります（ほかの人の票は取り消されます）。<br>どちらか一度だけ使えます。"
-
-"button.label.autocracy" : "独裁会議"
-
-"options.role.autocracy.detail" : "独裁者は一度だけ<color=#ffd166>独裁会議</color>を発動できます。<br>タスク中なら会議を開き、会議中なら自分が投票する前に<color=#ff4d4d>処刑先を指定</color>できます。<br>独裁会議では独裁者だけが投票でき、<color=#ff4d4d>その日の処刑結果を強制</color>できます。"
-
-## Rebel - Crewmate(Madmate)
-"role.rebel.name" : "レブル"
-"role.rebel.short" : "レブ"
-"role.rebel.blurb" : "理不尽な独裁を食い止めろ"
-"options.role.rebel.detail" : "レブルは<color=#ff4d4d>独裁者と付随して出現</color>する反逆の狂人です。<br>独裁者と一緒に、レブルの能力を持った狂人が 1 人割り当てられます。<br>独裁会議が開かれたときにレブルが生存していると、独裁者自身が処刑されます。<br>勝利条件やインポスターの判明などは、狂人の設定に従います。"
-
-
-### junjun Made
-
-##スポイラー modifier for Impostor
-"role.spoiler.name" : "スポイラー"
-"role.spoiler.short" : "スポ"
-"role.spoiler.blurb" : "ネタバレ注意"
-"role.spoiler.doc" : "スポイラーはキルするとその人の役職が分かり、その役職が残り何人か判別できます<br>なお判別された人数はその時の人数であり変化しない"
-"options.role.spoiler.detail" : "スポイラーはキルするとその人の役職が分かり、その役職が残り何人か判別できます<br>なお判別された人数はその時の人数であり変化しない"
-"role.spoiler.overlay" : "残り%COUNT%人"
-"options.role.spoiler.CanSeeRemainingRoles" : "キルした役職の残り人数が見える"
-
-##アキューサー neutral
-"teams.accuser" : "アキューサー"
-"role.accuser.name" : "アキューサー"
-"role.accuser.short" : "アキュ"
-"role.accuser.blurb" : "すべてを見透かせ"
-"role.accuser.doc" : "他役職を一定数推測をすることにより勝利が出来ます"
-"options.role.accuser.detail" : "他役職を一定数推測をすることにより勝利が出来ます"
-"options.role.accuser.NumOfGuessToWinOption" : "勝利に必要な推測成功回数"
-"options.role.accuser.numOfGuessPerMeeting" : "１回の会議で推測できる回数"
-"options.role.accuser.numOfMissAllowed" : "許容ミス回数"
-"options.role.accuser.disableGuessAfterMiss" : "ミスした場合その会議中にゲッサーを出来なくするか"
-"role.accuser.leftMiss" : "のこりミス可能回数"
-"end.accuser" : "アキューサー%EXTRA%勝利"
-
-##ばーくろー modifier for Crewmate
-"role.barclaw.name" : "ばーくろー"
-"role.barclaw.short" : "ば"
-"role.barclaw.generalBlurb" : "死が重なれば、沈黙は破られる"
-"role.barclaw.doc" : "ばーくろーは死人が一定数出ると勝手に緊急会議を始めてしまうクルー専用モディファイアです"
-"options.role.barclaw.detail" : "ばーくろーは死人が一定数出ると勝手に緊急会議を始めてしまうクルー専用モディファイアです"
-"options.role.barclaw.numOfDeadRequired" : "緊急会議が発動する死体の数"
-"options.role.barclaw.numOfMaxButton" : "緊急会議が発動する最大回数"
-"options.role.barclaw.enableAfterSecondTurn" : "２回目のターン以降に有効化"
-"options.role.barclaw.showMeetingInFlash" : "会議が入る前(死体が一定数出た時のフラッシュ表示)"
-"options.role.barclaw.meetingDelayOption" : "会議が始まるまでの遅延"
-"options.role.barclaw.meetingDelayDispersionOption" : "会議が始まるまでの遅延のばらつき"
-"options.role.barclaw.allowGhostMeeting" : "死んでいても通報が入るか"
-
-### Common
-
-## Settings
-"settings.mrip.category.stable" : "安定版"
-"settings.mrip.category.snapshot" : "スナップショット"
-"settings.mrip.category.unknown" : "不明"
-"settings.mrip.downloading" : "更新をダウンロード中..."
-"settings.mrip.update.message" : "更新のダウンロードが完了しました。\n\nゲームを再起動すると、\n新しいバージョン(%VERSION%)が適用されます。"
-"settings.mrip.update.title" : "ダウンロード完了"
-"settings.mrip.update.failed" : "ダウンロード失敗"
-"settings.mrip.dialog.title" : "MRIP設定"
-"settings.mrip.dialog.ok" : "OK"
-"settings.mrip.button.name" : "MRIP設定"
-"settings.mrip.button.backToNoS" : "← NoS設定"
-"settings.mrip.loading" : "バージョン情報を読み込み中..."
-"settings.mrip.status.current" : "使用中"
-"settings.mrip.button.get" : "取得"
-"settings.mrip.button.more" : "もっと読み込む"
-
+"achievement.moreRolesInPolus.matchGirl.common1.title" : "一夜の灯"
+"achievement.moreRolesInPolus.matchGirl.common1.goal" : "マッチを灯したインポスターのキルを防ぐ。"
+"achievement.moreRolesInPolus.matchGirl.common2.title" : "火種の行商"
+"achievement.moreRolesInPolus.matchGirl.common2.goal" : "タスクでマッチを補充する。"
+"achievement.moreRolesInPolus.matchGirl.common3.title" : "燐寸の魔女"
+"achievement.moreRolesInPolus.matchGirl.common3.goal" : "1試合で、マッチで3回以上キルを防ぐ。"
+"achievement.moreRolesInPolus.matchGirl.another1.title" : "おばあさんのもとへ"
+"achievement.moreRolesInPolus.matchGirl.another1.goal" : "マッチを使い切って凍死する。"
+"achievement.moreRolesInPolus.matchGirl.another2.title" : "残り火"
+"achievement.moreRolesInPolus.matchGirl.another2.goal" : "キルされた自分の死体が通報され、最後にマッチを灯した相手がインポスターだった。"
+"achievement.moreRolesInPolus.matchGirl.challenge.title" : "大晦日の奇跡"
+"achievement.moreRolesInPolus.matchGirl.challenge.goal" : "凍死せずに最後まで生き残り、マッチで2回以上キルを防いで、クルーメイトとして勝利する。"
+
+
+### junjun Made
+
+##スポイラー modifier for Impostor
+"role.spoiler.name" : "スポイラー"
+"role.spoiler.short" : "スポ"
+"role.spoiler.blurb" : "ネタバレ注意"
+"role.spoiler.doc" : "スポイラーはキルするとその人の役職が分かり、その役職が残り何人か判別できます<br>なお判別された人数はその時の人数であり変化しない"
+"options.role.spoiler.detail" : "スポイラーはキルするとその人の役職が分かり、その役職が残り何人か判別できます<br>なお判別された人数はその時の人数であり変化しない"
+"role.spoiler.overlay" : "残り%COUNT%人"
+"options.role.spoiler.CanSeeRemainingRoles" : "キルした役職の残り人数が見える"
+
+##アキューサー neutral
+"teams.accuser" : "アキューサー"
+"role.accuser.name" : "アキューサー"
+"role.accuser.short" : "アキュ"
+"role.accuser.blurb" : "すべてを見透かせ"
+"role.accuser.doc" : "他役職を一定数推測をすることにより勝利が出来ます"
+"options.role.accuser.detail" : "他役職を一定数推測をすることにより勝利が出来ます"
+"options.role.accuser.NumOfGuessToWinOption" : "勝利に必要な推測成功回数"
+"options.role.accuser.numOfGuessPerMeeting" : "１回の会議で推測できる回数"
+"options.role.accuser.numOfMissAllowed" : "許容ミス回数"
+"options.role.accuser.disableGuessAfterMiss" : "ミスした場合その会議中にゲッサーを出来なくするか"
+"role.accuser.leftMiss" : "のこりミス可能回数"
+"end.accuser" : "アキューサー%EXTRA%勝利"
+
+##ばーくろー modifier for Crewmate
+"role.barclaw.name" : "ばーくろー"
+"role.barclaw.short" : "ば"
+"role.barclaw.generalBlurb" : "死が重なれば、沈黙は破られる"
+"role.barclaw.doc" : "ばーくろーは死人が一定数出ると勝手に緊急会議を始めてしまうクルー専用モディファイアです"
+"options.role.barclaw.detail" : "ばーくろーは死人が一定数出ると勝手に緊急会議を始めてしまうクルー専用モディファイアです"
+"options.role.barclaw.numOfDeadRequired" : "緊急会議が発動する死体の数"
+"options.role.barclaw.numOfMaxButton" : "緊急会議が発動する最大回数"
+"options.role.barclaw.enableAfterSecondTurn" : "２回目のターン以降に有効化"
+"options.role.barclaw.showMeetingInFlash" : "会議が入る前(死体が一定数出た時のフラッシュ表示)"
+"options.role.barclaw.meetingDelayOption" : "会議が始まるまでの遅延"
+"options.role.barclaw.meetingDelayDispersionOption" : "会議が始まるまでの遅延のばらつき"
+"options.role.barclaw.allowGhostMeeting" : "死んでいても通報が入るか"
+
+### Common
+
+## Settings
+"settings.mrip.category.stable" : "安定版"
+"settings.mrip.category.snapshot" : "スナップショット"
+"settings.mrip.category.unknown" : "不明"
+"settings.mrip.downloading" : "更新をダウンロード中..."
+"settings.mrip.update.message" : "更新のダウンロードが完了しました。\n\nゲームを再起動すると、\n新しいバージョン(%VERSION%)が適用されます。"
+"settings.mrip.update.title" : "ダウンロード完了"
+"settings.mrip.update.failed" : "ダウンロード失敗"
+"settings.mrip.dialog.title" : "MRIP設定"
+"settings.mrip.dialog.ok" : "OK"
+"settings.mrip.button.name" : "MRIP設定"
+"settings.mrip.button.backToNoS" : "← NoS設定"
+"settings.mrip.loading" : "バージョン情報を読み込み中..."
+"settings.mrip.status.current" : "使用中"
+"settings.mrip.button.get" : "取得"
+"settings.mrip.button.more" : "もっと読み込む"
+

@@ -38,6 +38,26 @@ BepInEx のログ（Unity の例外を含む）と NoS の NebulaLog.txt を、�
 - 起動時に大量に出る無関係なログは `[Log] IgnorePattern` で除いている
 - 複数起動したときは 2 つ目以降を `DevKit.2.log` のように分ける（`Watch-DevKitLog.ps1 -Index 2`）。自動フリープレイも 1 つ目だけで行う
 
+## 開発用の命令
+
+手では作りにくい状況（ダミーに会議を開かせる、ダミーとして投票する など）を作る命令。2 通りの打ち方がある。
+
+- ゲーム内のコンソール: **左 Ctrl + Enter** で開き、`meeting 1` のように打つ（`devkit` で一覧）。どのゲームからでも打てる
+- ゲームフォルダの `DevKit.commands` に 1 行ずつ書いて保存する（最初に起動したゲームが読む）。行の終わりで改行すること
+
+| 命令 | 内容 |
+|---|---|
+| `players` | プレイヤーの一覧（ID・名前・役職・生死） |
+| `meeting <player>` | そのプレイヤーに緊急会議を開かせる |
+| `vote <player> <target>` | そのプレイヤーとして投票する（target は ID か `skip`） |
+| `discussion <秒>` | 議論時間を変える（次の会議から） |
+| `option <設定名> <値>` | NoS の設定を変える |
+| `onlyroles <役職,...>` / `restoreroles` | 指定した役職以外を出なくする / 元に戻す |
+| `state` | 会議の状態（段階・投票ルール） |
+
+役職を変えるときは、コンソールでは NoS 本体の `role <player> <役職名>`（例: `role 0 独裁者`）を使う。
+`DevKit.commands` では `role <player> <内部名>`（例: `role me autocracy`）。
+
 ## セットアップ
 
 1. `dotnet build` でビルドすると `$(AmongUs)\BepInEx\plugins` に配置される（ゲームを終了しておくこと）

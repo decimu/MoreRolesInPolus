@@ -1,4 +1,6 @@
-﻿namespace MoreRolesInPolus.Roles.Crewmate;
+﻿using MoreRolesInPolus.Scripts.Core;
+
+namespace MoreRolesInPolus.Roles.Crewmate;
 
 [NebulaRPCHolder]
 public class Researcher
@@ -53,6 +55,18 @@ public class Researcher
 
   public static readonly Researcher MyRole = new();
 
+  // 称号（MyRole を関係する役職に使うので、MyRole より後で登録する）
+  private static readonly bool TitlesRegistered = RegisterTitles();
+
+  private static bool RegisterTitles()
+  {
+    AddonTitles.Register(MyRole, "researcher", "common1", Virial.Achievements.TrophyLevel.Silver);
+    AddonTitles.Register(MyRole, "researcher", "common2", Virial.Achievements.TrophyLevel.Silver);
+    AddonTitles.Register(MyRole, "researcher", "common3", Virial.Achievements.TrophyLevel.Gold);
+    AddonTitles.Register(MyRole, "researcher", "challenge", Virial.Achievements.TrophyLevel.Rainbow);
+    return true;
+  }
+
   bool IAssignableDocument.HasTips => true;
   bool IAssignableDocument.HasAbility => true;
 
@@ -104,6 +118,13 @@ public class Researcher
     private record SurveyHistory(float Time, GamePlayer Player, string Content, string Prefix);
 
     private List<SurveyHistory> InthisturnResult = [];
+
+    // 称号の判定に使う
+    AchievementToken<int>? usesToken; // 現場百遍: 1 試合で使った回数
+    readonly HashSet<byte> examinedPlayers = []; // 1 試合で調査か追跡をした相手
+    readonly HashSet<byte> trackedThisTurn = []; // このターンに追跡した相手
+    int usesThisTurn = 0;
+    GamePlayer? myVoteFor = null; // この会議で自分が投票した相手
 
     // 監視モード: 会議まで行動を記録する
     private record LoggerTarget(float StartTime, GamePlayer Player);
@@ -161,6 +182,9 @@ public class Researcher
 
       if (AmOwner)
       {
+        if (!isUsurped)
+          usesToken = new(AddonTitles.Id("researcher", "common1"), 0, (count, _) => count >= 5);
+
         //実行対象をきめるやつ
         var surveyTracker = ObjectTrackers.ForPlayerlike(
           this,
@@ -241,6 +265,13 @@ public class Researcher
           }
 
           this.leftUses--;
+
+          examinedPlayers.Add(TargetPlayer.PlayerId);
+          if (currentMode == AbilityMode.Logger)
+            trackedThisTurn.Add(TargetPlayer.PlayerId);
+          usesThisTurn++;
+          if (usesToken != null)
+            usesToken.Value++;
           surveyButton.UpdateUsesIcon(this.leftUses.ToString());
         }
 
@@ -356,12 +387,61 @@ public class Researcher
       allActions.Add(new(Time.time, ev.Dead, "何らかの手段によって殺害された"));
     }
 
+    //ドアを開けた
+    [Local]
+    void OnOpenDoor(Virial.Events.Game.Door.PlayerOpenDoorEvent ev)
+    {
+      // ドアは部屋の境目にあり、位置から部屋を調べると「部屋外」になるので、ドア自身が持つ部屋を使う
+      var room = AmongUsUtil.ToDisplayString(ev.Door.VanillaObject.Room);
+      allActions.Add(new(Time.time, ev.Player, string.IsNullOrEmpty(room) ? "どこかのドアを開けたようだ..." : $"{room}のドアを開けたようだ..."));
+    }
+
+    void GainTitle(string key)
+    {
+      if (AmOwner && !IsUsurped)
+        AddonTitles.Gain("researcher", key);
+    }
+
+    [Local]
+    void OnCastVote(PlayerVoteCastLocalEvent ev)
+    {
+      if (ev.Voter == MyPlayer)
+        myVoteFor = ev.VoteFor;
+    }
+
+    [Local]
+    void OnExiled(PlayerExiledEvent ev)
+    {
+      var exiled = ev.Player;
+
+      // 張り込み: 追跡したインポスターが、その次の会議で追放された
+      if (exiled.IsImpostor && trackedThisTurn.Contains(exiled.PlayerId))
+        GainTitle("common2");
+
+      // 動かぬ証拠: 調査か追跡をしたインポスターに投票して追放した
+      if (exiled.IsImpostor && examinedPlayers.Contains(exiled.PlayerId) && myVoteFor == exiled)
+        GainTitle("common3");
+
+      // 深淵に飲み込まれし者の行方は: 1 ターンで 3 回使い、次の会議で自分が追放された（使える回数が 5 回以上のときだけ）
+      int maxSurvey = MaxSurveyOption.GetValue();
+      if (exiled == MyPlayer && usesThisTurn >= 3 && (maxSurvey == 0 || maxSurvey >= 5))
+        GainTitle("challenge");
+    }
+
+    [Local]
+    void OnTaskPhaseStart(TaskPhaseStartEvent ev)
+    {
+      trackedThisTurn.Clear();
+      usesThisTurn = 0;
+    }
+
     //ミーティングボタンが押されたときに実行する
-    //APIが追加されたら、ドアの記録も取得する
     //検証
     [Local]
     void OnMeetingStart(MeetingStartEvent ev)
     {
+      myVoteFor = null;
+
       // 監視中のログを処理する
       foreach (var logger in activeLoggers)
       {

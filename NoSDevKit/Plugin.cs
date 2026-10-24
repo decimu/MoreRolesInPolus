@@ -60,6 +60,8 @@ public class Plugin : BasePlugin
 
         // 命令ファイルは 1 つなので、最初に起動したゲームだけが読む
         if (Instance.IsFirst) DevCommands.Start();
+        // ゲーム内コンソールの命令は、どのゲームからでも打てる
+        ConsoleCommands.Start();
 
         // 部屋を立てるのは最初の 1 つだけ。通常モードでは 2 つ目以降がその部屋に参加する
         if (AutoFreeplayEnabled.Value && Instance.IsFirst)

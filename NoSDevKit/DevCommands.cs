@@ -50,14 +50,15 @@ internal static class DevCommands
         }
     }
 
-    private static void Execute(string line)
+    /// <summary>命令を 1 行実行する（ゲーム内コンソールからも呼ばれる）</summary>
+    internal static void Execute(string line)
     {
         var args = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         switch (args[0].ToLowerInvariant())
         {
             case "help":
                 Plugin.Logger.LogMessage(
-                    "Command: 使える命令\n" +
+                    "Command: 使える命令（DevKit.commands に書くか、ゲーム内のコンソール〔左 Ctrl + Enter〕で打つ）\n" +
                     "  players                 プレイヤーの一覧（ID・名前・役職・生死）\n" +
                     "  role <player> <役職>    役職を変える（player は ID か me。madmate+rebel のように + で能力を載せられる）\n" +
                     "  meeting <player>        そのプレイヤーに緊急会議を開かせる\n" +
