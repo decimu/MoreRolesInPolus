@@ -1,4 +1,5 @@
 {
+	"dotnet.defaultSolution": "MoreRolesInPolus.sln",
 	"[csharp]": {
 		"editor.defaultFormatter": "csharpier.csharpier-vscode",
 		"editor.formatOnSave": true
