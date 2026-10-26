@@ -58,6 +58,11 @@ public static class NoSWindowPos {
 
 $screens = [System.Windows.Forms.Screen]::AllScreens
 $targets = @($screens | Where-Object { $_.DeviceName -eq '\\.\DISPLAY1' }) + @($screens | Where-Object { $_.DeviceName -eq '\\.\DISPLAY4' })
+# When tiling and no size was given, use a quarter of the screen so that 2x2 windows fit
+if ($Count -gt 1 -and $targets.Count -gt 0) {
+    if (-not $PSBoundParameters.ContainsKey('Width')) { $Width = [int]($targets[0].Bounds.Width / 2) }
+    if (-not $PSBoundParameters.ContainsKey('Height')) { $Height = [int]($targets[0].Bounds.Height / 2) }
+}
 $cells = foreach ($s in $targets) { foreach ($row in 0, 1) { foreach ($col in 0, 1) { ,@(($s.Bounds.X + $col * $Width), ($s.Bounds.Y + $row * $Height)) } } }
 
 $launchArgs = "-screen-fullscreen 0 -screen-width $Width -screen-height $Height"
