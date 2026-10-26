@@ -51,7 +51,8 @@ jobs:
 
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "filename=MoreRolesInPolus-v${VERSION}.zip" >> $GITHUB_OUTPUT
-          echo "release_name=MoreRolesInPolus-v${VERSION}" >> $GITHUB_OUTPUT
+          # リリース名は本家の「Nebula on the Ship ver 3.6」に合わせる
+          echo "release_name=MoreRolesInPolus ver ${VERSION}" >> $GITHUB_OUTPUT
           echo "Release version: $TAG"
 
       - name: Create ZIP from source
@@ -68,27 +69,20 @@ jobs:
           # アドオン本体（MoreRolesInPolus/）に触れたコミットだけ載せる（NoSDevKit や .vscode などの開発用の変更は載せない）
           if [ -z "$PREV_TAG" ]; then
             # 初回リリースの場合
-            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges HEAD -- MoreRolesInPolus)
+            SUBJECTS=$(git log --reverse --pretty=format:"%s" --no-merges HEAD -- MoreRolesInPolus)
           else
             # 前回タグから今回までのコミット
-            COMMITS=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges -- MoreRolesInPolus)
+            SUBJECTS=$(git log --reverse "${PREV_TAG}..HEAD" --pretty=format:"%s" --no-merges -- MoreRolesInPolus)
           fi
 
-          # コミットが空の場合のフォールバック
-          if [ -z "$COMMITS" ]; then
-            COMMITS="- 軽微な修正・改善"
+          # 本家と同じく「〜しました。」の文を1行で書く（件名の「〜を追加」「〜を修正」に「しました。」を付けてつなげる）
+          # 本文はゲーム内のバージョン一覧にもそのまま出るので、改行しない
+          # 「v0.4.1」のようなバージョンだけの件名は載せない
+          NOTES=$(printf '%s\n' "$SUBJECTS" | grep -v -E '^v?[0-9]+(\.[0-9]+)*$' | sed -E '/^$/d; s/。$//; s/(しました)?$/しました。/' | tr -d '\n')
+          if [ -z "$NOTES" ]; then
+            NOTES="軽微な修正を行いました。"
           fi
-
-          {
-            echo "## 📝 変更内容"
-            echo
-            echo "$COMMITS"
-            echo
-            echo "## 📦 インストール方法"
-            echo
-            echo "1. ZIPファイルをダウンロード"
-            echo "2. **解凍せずに**そのままAmong Usの\`Addons\`フォルダに配置"
-          } > release_notes.md
+          echo "$NOTES" > release_notes.md
 
           echo "Release notes:"
           cat release_notes.md
