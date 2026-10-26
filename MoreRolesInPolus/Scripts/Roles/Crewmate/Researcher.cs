@@ -39,14 +39,14 @@ public class Researcher
     );
   private static readonly FloatConfiguration SurveyTimeOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.researcher.surveytime",
+      "options.role.researcher.surveyTime",
       (10f, 60f, 2.5f),
       30f,
       FloatConfigurationDecorator.Second
     );
   private static readonly IntegerConfiguration MaxSurveyOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.researcher.maxsurvey",
+      "options.role.researcher.maxSurvey",
       (0, 10, 1),
       5,
       null,

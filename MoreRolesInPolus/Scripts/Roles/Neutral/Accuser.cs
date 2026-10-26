@@ -28,7 +28,7 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
   // 何回推測成功したら勝ちか
   private static IntegerConfiguration NumOfGuessToWinOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.accuser.NumOfGuessToWinOption",
+      "options.role.accuser.numOfGuessToWin",
       (1, 10),
       2
     );
@@ -170,6 +170,11 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
                       );
                       leftGuess--;
                       leftGuessPerMeeting--;
+                      ModSingleton<IWinningOpportunity>.Instance.RpcSetOpportunity(
+                        AccuserTeamInfo.MyTeam!,
+                        0.85f - (leftGuess - 1) * 0.2f,
+                        false
+                      );
                     }
                   }
                   else

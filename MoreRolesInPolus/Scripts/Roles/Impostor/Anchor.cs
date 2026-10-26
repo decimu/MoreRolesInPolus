@@ -1,7 +1,7 @@
 ﻿using global::MoreRolesInPolus.Scripts.Core;
 using Virial.Runtime;
 
-namespace MoreRolesInPolus.Roles.Imposter
+namespace MoreRolesInPolus.Roles.Impostor
 {
   [NebulaPreprocess(PreprocessPhase.PostFixStructure)]
   public static class HarmonyPatchSetUp

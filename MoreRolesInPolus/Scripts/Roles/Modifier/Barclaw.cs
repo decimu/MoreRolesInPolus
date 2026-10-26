@@ -34,14 +34,14 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
     NebulaAPI.Configurations.Configuration("options.role.barclaw.showMeetingInFlash", false);
   private static readonly FloatConfiguration meetingDelayOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.barclaw.meetingDelayOption",
+      "options.role.barclaw.meetingDelay",
       (0f, 5f, 0.5f),
       2f,
       FloatConfigurationDecorator.Second
     );
   private static readonly FloatConfiguration meetingDelayDispersionOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.barclaw.meetingDelayDispersionOption",
+      "options.role.barclaw.meetingDelayDispersion",
       (0f, 10f, 0.25f),
       3f,
       FloatConfigurationDecorator.Second

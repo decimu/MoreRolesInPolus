@@ -1,4 +1,4 @@
-﻿namespace MoreRolesInPolus.Roles.Imposter;
+﻿namespace MoreRolesInPolus.Roles.Impostor;
 
 //spoiler キルした相手の役職を確認できるインポスター役職
 //
@@ -31,7 +31,7 @@ public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, Define
 
   //オプション：残りのその役職の人数も表示するか
   private static readonly BoolConfiguration CanSeeRemainingRoles =
-    NebulaAPI.Configurations.Configuration("options.role.spoiler.CanSeeRemainingRoles", true);
+    NebulaAPI.Configurations.Configuration("options.role.spoiler.canSeeRemainingRoles", true);
 
   public class Ability : AbstractPlayerUsurpableAbility, IPlayerAbility
   {
