@@ -80,6 +80,18 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole, IAssignableDocument
     yield return new("%MISS%", NumOfMissAllowedOption.GetValue().ToString());
   }
 
+  // 推測を外して死んだとき、誰を何の役職だと推測したかを死因に添える（NoS のゲッサーと同じ）
+  private record MisguessedExtraDeadInfo(GamePlayer To, DefinedRole Role)
+    : GamePlayer.ExtraDeadInfo(PlayerStates.Misguessed)
+  {
+    public override string ToStateText() => To.PlayerName + " as " + Role.DisplayColoredName;
+  }
+
+  private static readonly RemoteProcess<(GamePlayer guesser, GamePlayer to, DefinedRole role)> RpcShareMisguess = new(
+    "AccuserShareMisguess",
+    (message, _) => message.guesser.PlayerStateExtraInfo = new MisguessedExtraDeadInfo(message.to, message.role)
+  );
+
   RuntimeRole RuntimeAssignableGenerator<RuntimeRole>.CreateInstance(
     GamePlayer player,
     int[] arguments
@@ -196,6 +208,7 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole, IAssignableDocument
                         KillParameter.MeetingKill,
                         KillCondition.BothAlive
                       );
+                      RpcShareMisguess.Invoke((NebulaAPI.CurrentGame!.LocalPlayer, p, r));
                     }
                     else
                     {

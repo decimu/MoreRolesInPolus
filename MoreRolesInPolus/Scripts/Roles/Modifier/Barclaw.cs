@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MoreRolesInPolus.Scripts.Utils;
-using static Rewired.UI.ControlMapper.ControlMapper;
+﻿using MoreRolesInPolus.Scripts.Utils;
 
 namespace MoreRolesInPolus.Roles.Modifier;
 
@@ -46,8 +42,7 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
       3f,
       FloatConfigurationDecorator.Second
     );
-
-  //死んでいても緊急会議が発動するか
+  //数がそろってから会議が始まるまでの間に死んでも、緊急会議が発動するか
   private static readonly BoolConfiguration AllowGhostMeeting =
     NebulaAPI.Configurations.Configuration("options.role.barclaw.allowGhostMeeting", false);
   public static Barclaw MyRole = new Barclaw();
@@ -79,43 +74,38 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
         name += MyRole.GetRoleIconTagSmall();
     }
 
-    bool myDead = false;
     int numOfKillCount = 0;
     int numOfButtonCount = 0;
     int nowTurn = 1;
-    List<GamePlayer> deadPlayer = new List<GamePlayer>();
+    readonly List<GamePlayer> deadPlayer = [];
 
     [Local]
     void OnKillPlayer(PlayerKillPlayerEvent ev)
     {
-      if (!MyPlayer.IsAlive)
+      // 数えるのはタスク中の、自分以外の死だけ（会議中の推測などは数えない）
+      if (MeetingHud.Instance || ev.Dead == MyPlayer)
         return;
-      if (AmOwner)
-      {
-        if (MyPlayer.IsDead)
-        {
-          myDead = true;
-        }
 
-        numOfKillCount++;
-        deadPlayer.Add(ev.Dead);
+      numOfKillCount++;
+      deadPlayer.Add(ev.Dead);
 
-        if (numOfKillCount == numOfDeadRequired && !myDead && numOfMaxButton > numOfButtonCount)
-        {
-          if (enableAfterSecondTurn && nowTurn < 2)
-            return;
+      if (numOfKillCount != numOfDeadRequired || numOfButtonCount >= numOfMaxButton)
+        return;
+      if (enableAfterSecondTurn && nowTurn < 2)
+        return;
+      // 数がそろった時点ですでに死んでいたら呼ばない
+      if (MyPlayer.IsDead)
+        return;
 
-          if (showMeetingInFlash)
-            AmongUsUtil.PlayQuickFlash(MyRole.UnityColor);
+      if (showMeetingInFlash)
+        AmongUsUtil.PlayQuickFlash(MyRole.UnityColor);
 
-          float t =
-            Virial.Utilities.Mathn.Max(0.1f, meetingDelayOption)
-            + meetingDelayDispersionOption * (float)System.Random.Shared.NextDouble();
+      float t =
+        Virial.Utilities.Mathn.Max(0.1f, meetingDelayOption)
+        + meetingDelayDispersionOption * (float)System.Random.Shared.NextDouble();
 
-          NebulaManager.Instance.StartCoroutine(WaitAndCallCoroutine(t).WrapToIl2Cpp());
-          numOfButtonCount++;
-        }
-      }
+      NebulaManager.Instance.StartCoroutine(WaitAndCallCoroutine(t).WrapToIl2Cpp());
+      numOfButtonCount++;
     }
 
     // t秒待ってからミーティングを呼ぶコルーチン
@@ -123,10 +113,11 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
     {
       yield return new UnityEngine.WaitForSeconds(t);
 
-      // 待機後に条件がまだ満たされていれば実行
-      if (!AmOwner)
+      // 待っている間に試合が終わった、属性が外れたなら呼ばない。
+      // 待っている間に自分が殺されたときは、「死んでいても通報が入るか」しだい
+      if (IsDeadObject)
         yield break;
-      if ((myDead || MyPlayer.IsDead) && !AllowGhostMeeting)
+      if (MyPlayer.IsDead && !AllowGhostMeeting)
         yield break;
 
       CallMeetingHelper.CallMeeting(MyPlayer);
@@ -135,37 +126,16 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
     [Local]
     void OnPlayerRevived(PlayerReviveEvent ev)
     {
-      if (AmOwner)
-      {
-        if (deadPlayer.Contains(ev.Revived))
-        {
-          if (myDead && ev.Revived == MyPlayer)
-          {
-            myDead = false;
-          }
-          numOfKillCount--;
-          deadPlayer.Remove(ev.Revived);
-        }
-      }
+      if (deadPlayer.Remove(ev.Revived))
+        numOfKillCount--;
     }
 
-    void OnMeetingEnd(MeetingEndEvent ev)
-    {
-      if (AmOwner)
-      {
-        numOfKillCount = 0;
-        deadPlayer.Clear();
-      }
-    }
-
+    [Local]
     void OnMeetingPreStart(MeetingPreStartEvent ev)
     {
-      if (AmOwner)
-      {
-        nowTurn++;
-        numOfKillCount = 0;
-        deadPlayer.Clear();
-      }
+      nowTurn++;
+      numOfKillCount = 0;
+      deadPlayer.Clear();
     }
   }
 }
