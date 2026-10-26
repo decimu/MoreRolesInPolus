@@ -169,7 +169,8 @@ public class Researcher
             .Replace("%ACTION%", action.Text)
         );
       }
-      return result.ToString();
+      // AppendLine は最後の行にも改行を付けるので、会議の表示で空の行が残らないように落とす
+      return result.ToString().TrimEnd();
     }
 
     public Ability(GamePlayer player, bool isUsurped, int leftUses)

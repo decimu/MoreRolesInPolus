@@ -79,11 +79,14 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
     int nowTurn = 1;
     readonly List<GamePlayer> deadPlayer = [];
 
+    /// <summary>タスクのターン中か。会議が始まると false になり、追放のあと次のターンが始まると true に戻る</summary>
+    bool inTaskPhase = true;
+
     [Local]
     void OnKillPlayer(PlayerKillPlayerEvent ev)
     {
       // 数えるのはタスク中の、自分以外の死だけ（会議中の推測などは数えない）
-      if (MeetingHud.Instance || ev.Dead == MyPlayer)
+      if (!inTaskPhase || MeetingHud.Instance || ev.Dead == MyPlayer)
         return;
 
       numOfKillCount++;
@@ -130,12 +133,18 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
         numOfKillCount--;
     }
 
+    // MeetingPreStartEvent は NoS の入口から開いた会議でしか出ないので、どの会議でも出る MeetingStartEvent で数え直す
     [Local]
-    void OnMeetingPreStart(MeetingPreStartEvent ev)
+    void OnMeetingStart(MeetingStartEvent ev)
     {
+      inTaskPhase = false;
       nowTurn++;
       numOfKillCount = 0;
       deadPlayer.Clear();
     }
+
+    // 追放が終わって次のターンが始まったら、また数え始める（数は会議の開始で 0 にしてある）
+    [Local]
+    void OnTaskPhaseStart(TaskPhaseStartEvent ev) => inTaskPhase = true;
   }
 }
