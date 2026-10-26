@@ -65,12 +65,13 @@ jobs:
           PREV_TAG=$(git tag -l "v,v*" --sort=-version:refname | head -n 1)
           echo "Previous tag: $PREV_TAG"
 
+          # アドオン本体（MoreRolesInPolus/）に触れたコミットだけ載せる（NoSDevKit や .vscode などの開発用の変更は載せない）
           if [ -z "$PREV_TAG" ]; then
             # 初回リリースの場合
-            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges HEAD)
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges HEAD -- MoreRolesInPolus)
           else
             # 前回タグから今回までのコミット
-            COMMITS=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges)
+            COMMITS=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges -- MoreRolesInPolus)
           fi
 
           # コミットが空の場合のフォールバック
