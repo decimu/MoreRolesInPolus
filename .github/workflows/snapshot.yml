@@ -79,7 +79,8 @@ jobs:
         if [ -z "$NOTES" ]; then
           NOTES="軽微な修正を行いました。"
         fi
-        echo "$NOTES" > release_notes.md
+        # 末尾に改行を付けない（ゲーム内のバージョン一覧は本文をそのまま出すので、空の行が出てしまう）
+        printf '%s' "$NOTES" > release_notes.md
 
         echo "Release notes:"
         cat release_notes.md
