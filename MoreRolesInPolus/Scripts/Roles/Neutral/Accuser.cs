@@ -23,7 +23,7 @@ internal class AccuserTeamInfo
 // 会議中以外暇な役職になってしまってるから仕事を与えたい
 // 今考えてるのとしては何かをしないとゲッサーの玉をゲットできないというもの
 // 例えば生きてる人全員に一回触れる(クールタイムなどはなしただ触れるだけもしくはクリックするだけ)
-internal class Accuser : DefinedRoleTemplate, DefinedRole
+internal class Accuser : DefinedRoleTemplate, DefinedRole, IAssignableDocument
 {
   // 何回推測成功したら勝ちか
   private static IntegerConfiguration NumOfGuessToWinOption =
@@ -68,6 +68,17 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
     ) { }
 
   Image? DefinedAssignable.IconImage => (Guesser.MyEvilRole as DefinedRole).IconImage;
+
+  // 推測は会議中の投票欄で行うので、本家のゲッサーと同じく能力の画像は出さず、ヒントで説明する
+  bool IAssignableDocument.HasWinCondition => true;
+  bool IAssignableDocument.HasTips => true;
+
+  IEnumerable<AssignableDocumentReplacement> IAssignableDocument.GetDocumentReplacements()
+  {
+    yield return new("%NUM%", NumOfGuessToWinOption.GetValue().ToString());
+    yield return new("%PER%", NumOfGuessPerMeetingOption.GetValue().ToString());
+    yield return new("%MISS%", NumOfMissAllowedOption.GetValue().ToString());
+  }
   private static readonly Image researchSprite = NebulaAPI
     .AddonAsset.GetResource(string.Format("Crewmate/Researcher/ResearchButton.png"))!
     .AsImage(115f)!;
