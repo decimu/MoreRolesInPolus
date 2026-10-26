@@ -40,16 +40,6 @@ public static class MRIPModUpdater
   public static bool MaybeNoMorePages { get; private set; } = false;
 
   /// <summary>
-  /// キャッシュをリセット
-  /// </summary>
-  public static void ResetCache()
-  {
-    _cache = null;
-    NextPage = 1;
-    MaybeNoMorePages = false;
-  }
-
-  /// <summary>
   /// アドオン読み込み直後に古いMRIPファイルを削除
   /// </summary>
   public static void CleanupOldAddonFiles()

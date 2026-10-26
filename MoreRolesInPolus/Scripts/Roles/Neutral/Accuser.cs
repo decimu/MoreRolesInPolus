@@ -79,9 +79,6 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole, IAssignableDocument
     yield return new("%PER%", NumOfGuessPerMeetingOption.GetValue().ToString());
     yield return new("%MISS%", NumOfMissAllowedOption.GetValue().ToString());
   }
-  private static readonly Image researchSprite = NebulaAPI
-    .AddonAsset.GetResource(string.Format("Crewmate/Researcher/ResearchButton.png"))!
-    .AsImage(115f)!;
 
   RuntimeRole RuntimeAssignableGenerator<RuntimeRole>.CreateInstance(
     GamePlayer player,
