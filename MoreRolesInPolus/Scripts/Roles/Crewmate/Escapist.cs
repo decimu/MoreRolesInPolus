@@ -96,6 +96,12 @@ public class Escapist
   static readonly CommunicableTextTag KilledTogetherState =
     NebulaAPI.Preprocessor!.RegisterCommunicableText("state.escapist.killedTogether");
 
+  // 逃亡失敗の死因に、逃げ込んだ相手とその役職を添える（NoS のゲッサーの「A as シェリフ」と同じ形）
+  private record CaughtExtraDeadInfo(GamePlayer Host, DefinedRole HostRole) : GamePlayer.ExtraDeadInfo(CaughtState)
+  {
+    public override string ToStateText() => Host.PlayerName + " as " + HostRole.DisplayColoredName;
+  }
+
   public override Ability CreateAbility(GamePlayer player, int[] arguments)
   {
     int max = NumOfEscapesOption.GetValue();
@@ -176,8 +182,8 @@ public class Escapist
     {
       /// <summary>何も起きない（逃げ込んでいない、または逃亡者自身が追放された）</summary>
       None,
-      /// <summary>逃げ込み先がインポスターだったので死ぬ</summary>
-      KilledByImpostor,
+      /// <summary>逃げ込み先がキル役職（インポスター、ジャッカルなど）だったので死ぬ</summary>
+      KilledByKiller,
       /// <summary>逃げ込み先が追放されたので、一緒に追放される</summary>
       ExiledWithTarget,
     }
@@ -189,8 +195,9 @@ public class Escapist
         return ExileFate.None;
       if (exiled.Contains(EscapeTarget))
         return ExileFate.ExiledWithTarget;
-      if (!EscapeTarget.IsDead && EscapeTarget.IsImpostor)
-        return ExileFate.KilledByImpostor;
+      // キル役職かは NoS の判定に任せる（インポスター全員、ジャッカル、タイラント、設定しだいでサイドキック）
+      if (!EscapeTarget.IsDead && EscapeTarget.IsKiller)
+        return ExileFate.KilledByKiller;
       return ExileFate.None;
     }
 
@@ -250,8 +257,13 @@ public class Escapist
     {
       var exiled = MeetingHudExtension.ExiledAllModCache ?? [];
       var fate = GetExileFate(exiled);
-      if (AmOwner && fate == ExileFate.KilledByImpostor)
-        MyPlayer.VanillaPlayer.ModMarkAsExtraVictim(null, CaughtState, CaughtState);
+      if (fate == ExileFate.KilledByKiller)
+      {
+        // 全員の端末で同じ判定をしているので、RPC を使わずに各端末で死因に添える
+        MyPlayer.PlayerStateExtraInfo = new CaughtExtraDeadInfo(EscapeTarget!, EscapeTarget!.Role.Role);
+        if (AmOwner)
+          MyPlayer.VanillaPlayer.ModMarkAsExtraVictim(null, CaughtState, CaughtState);
+      }
       else if (AmOwner && fate == ExileFate.ExiledWithTarget)
       {
         MyPlayer.VanillaPlayer.ModMarkAsExtraVictim(null, ExiledTogetherState, ExiledTogetherState);

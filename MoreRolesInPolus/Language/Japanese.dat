@@ -131,14 +131,14 @@
 "role.escapist.short" : "逃"
 "role.escapist.blurb" : "戸を叩く音は、救いか罠か"
 "role.escapist.doc" : "誰かの家に逃げ込み、夜をやり過ごすクルーメイトです。"
-"role.escapist.tips" : "・朝を迎えられたら、宿の主人はインポスターではありません。<br>・タスクの画面を開いている間は、隙だらけです。<br>・逃げ込んでいる間は、視界が狭くなります。"
+"role.escapist.tips" : "・朝を迎えられたら、宿の主人はキルできる役職ではありません。<br>・タスクの画面を開いている間は、隙だらけです。<br>・逃げ込んでいる間は、視界が狭くなります。"
 "state.escapist.caught" : "逃亡失敗"
 "state.escapist.exiledTogether" : "道連れ"
 "state.escapist.killedTogether" : "連座"
 
 "role.escapist.ability.title" : "固有能力 "逃亡""
 "role.escapist.ability.main" : "逃げ込んでいる間は<b>キルされず</b>、<br>アドミンにもバイタルにも姿を映しません。"
-"role.escapist.ability.escape" : "<title>逃亡</title>会議中、逃げ込む先の人物を選びます。<br>インポスターの家なら、朝は来ません。<br>宿の主人が追放やキルをされると、運命を共にします。<br>設定によっては、同じ家に続けて泊まれません。"
+"role.escapist.ability.escape" : "<title>逃亡</title>会議中、逃げ込む先の人物を選びます。<br>キルできる役職の家なら、朝は来ません。<br>宿の主人が追放やキルをされると、運命を共にします。<br>設定によっては、同じ家に続けて泊まれません。"
 
 "options.role.escapist.detail" : "エスケーピストは会議中に<b>逃げ込み先</b>を選び、<br>次のタスク中は<b>キルされません</b>。<br>ただし、宿の主人と運命を共にします。"
 "options.role.escapist.numOfEscapes" : "逃げ込める回数"
