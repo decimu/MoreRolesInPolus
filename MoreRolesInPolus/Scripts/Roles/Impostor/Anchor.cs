@@ -63,8 +63,12 @@ namespace MoreRolesInPolus.Roles.Impostor
         [placeCoolDownOption, cameraCoolDownOption, cameraDurationOption, numOfJacksOption]
       )
     {
-      ConfigurationHolder?.AddTags(ConfigurationTags.TagFunny);
+      ConfigurationHolder?.AddTags(ConfigurationTags.TagFunny, ConfigurationTags.TagDifficult);
+      // びっくり箱の設置を、本家のエコーやリサーチャーが「何かを設置した」として拾えるようにする
+      PlaceAction = new("anchor.placement", this, isPlacementAction: true);
     }
+
+    public static GameActionType PlaceAction { get; private set; } = null!;
 
     Citation? HasCitation.Citation => Citations.TheOtherRoles;
 
@@ -124,6 +128,11 @@ namespace MoreRolesInPolus.Roles.Impostor
     /// 役職の情報を用意します。
     /// </summary>
     public static readonly Anchor MyRole = new();
+
+    // 統計（MyRole を関係する役職に使うので、MyRole より後で作る）
+    static readonly GameStatsEntry StatsPlace = NebulaAPI.CreateStatsEntry("stats.anchor.place", GameStatsCategory.Roles, MyRole);
+    static readonly GameStatsEntry StatsCamera = NebulaAPI.CreateStatsEntry("stats.anchor.camera", GameStatsCategory.Roles, MyRole);
+
     AbilityAssignmentStatus DefinedRole.AssignmentStatus => AbilityAssignmentStatus.KillersSide;
     MultipleAssignmentType DefinedRole.MultipleAssignment => MultipleAssignmentType.Allowed;
 
@@ -471,6 +480,8 @@ namespace MoreRolesInPolus.Roles.Impostor
               new float[] { finalPos.x, finalPos.y }
             );
             localJacks.Add((obj.SyncObject as Jack)!);
+            NebulaGameManager.Instance?.RpcDoGameAction(MyPlayer, finalPos.ToUnityVector(), PlaceAction);
+            StatsPlace.Progress();
 
             leftJacks--;
             placeButton.UpdateUsesIcon(leftJacks.ToString());
@@ -662,6 +673,7 @@ namespace MoreRolesInPolus.Roles.Impostor
               if (!isInCameraMode)
               {
                 StartCameraMode();
+                StatsCamera.Progress();
               }
               else
               {

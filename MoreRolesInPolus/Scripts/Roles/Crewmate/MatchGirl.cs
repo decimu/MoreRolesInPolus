@@ -20,7 +20,14 @@ public class MatchGirl
       RoleCategory.CrewmateRole,
       NebulaTeams.CrewmateTeam,
       [NumOfMatchesOption, LightCooldownOption, TasksPerMatchOption, MaxMatchesOption, GlowSizeOption]
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagFunny);
+    // タスク中にマッチを灯したことを、本家のエコーやリサーチャーが拾えるようにする
+    LightAction = new("matchGirl.light", this);
+  }
+
+  static GameActionType LightAction = null!;
 
   Image? DefinedAssignable.IconImage => iconImage;
   static readonly Image iconImage = NebulaAPI
@@ -61,6 +68,10 @@ public class MatchGirl
     NebulaAPI.Preprocessor!.RegisterCommunicableText("state.matchGirl.frozen");
 
   public static readonly MatchGirl MyRole = new();
+
+  // 統計（MyRole を関係する役職に使うので、MyRole より後で作る）
+  static readonly GameStatsEntry StatsLight = NebulaAPI.CreateStatsEntry("stats.matchGirl.light", GameStatsCategory.Roles, MyRole);
+  static readonly GameStatsEntry StatsGuard = NebulaAPI.CreateStatsEntry("stats.matchGirl.guard", GameStatsCategory.Roles, MyRole);
 
   // 称号（MyRole を関係する役職に使うので、MyRole より後で登録する）
   private static readonly bool TitlesRegistered = RegisterTitles();
@@ -173,10 +184,17 @@ public class MatchGirl
       LightButton.ShowUsesIcon(3, Matches.ToString());
       LightButton.OnClick = button =>
       {
-        var target = tracker.CurrentTarget?.RealPlayer;
+        var target = tracker.CurrentTarget;
         if (target == null)
           return;
-        LightMatch(target);
+        // ドッペルゲンガーの分身などに灯そうとしたときは、本家と同じくはじかれて分身が消える（マッチは減らない）
+        if (GameOperatorManager.Instance?.Run(new PlayerInteractPlayerLocalEvent(MyPlayer, target, new(RealPlayerOnly: true))).IsCanceled ?? false)
+        {
+          button.StartCoolDown();
+          return;
+        }
+        LightMatch(target.RealPlayer);
+        NebulaGameManager.Instance?.RpcDoGameAction(MyPlayer, MyPlayer.Position.ToUnityVector(), LightAction);
         button.StartCoolDown();
       };
       LightButton.SetAsUsurpableButton(this);
@@ -198,6 +216,8 @@ public class MatchGirl
         return;
       Matches--;
       LightButton?.UpdateUsesIcon(Matches.ToString());
+      if (!IsUsurped)
+        StatsLight.Progress();
 
       if (!IsUsurped)
         RpcLight(MyPlayer, target.PlayerId);
@@ -304,6 +324,8 @@ public class MatchGirl
       if (AmOwner && ev.Murderer.IsImpostor)
       {
         GainTitle("common1");
+        if (!IsUsurped)
+          StatsGuard.Progress();
         if (GuardedKillsToken != null)
           GuardedKillsToken.Value++;
         if (ChallengeToken != null)

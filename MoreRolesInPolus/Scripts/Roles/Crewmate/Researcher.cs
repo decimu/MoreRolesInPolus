@@ -15,7 +15,10 @@ public class Researcher
       RoleCategory.CrewmateRole,
       NebulaTeams.CrewmateTeam,
       [SurveyCooldownOption, SurveyDurationOption, SurveyTimeOption, MaxSurveyOption]
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagDifficult);
+  }
 
   Image? DefinedAssignable.IconImage => iconImage;
   static readonly Image iconImage = NebulaAPI
@@ -54,6 +57,10 @@ public class Researcher
     );
 
   public static readonly Researcher MyRole = new();
+
+  // 統計（MyRole を関係する役職に使うので、MyRole より後で作る）
+  static readonly GameStatsEntry StatsSurvey = NebulaAPI.CreateStatsEntry("stats.researcher.survey", GameStatsCategory.Roles, MyRole);
+  static readonly GameStatsEntry StatsTrack = NebulaAPI.CreateStatsEntry("stats.researcher.track", GameStatsCategory.Roles, MyRole);
 
   // 称号（MyRole を関係する役職に使うので、MyRole より後で登録する）
   private static readonly bool TitlesRegistered = RegisterTitles();
@@ -272,6 +279,7 @@ public class Researcher
             activeLoggers.Add(new LoggerTarget(examineTime, TargetPlayer));
           }
 
+          (currentMode == AbilityMode.Instant ? StatsSurvey : StatsTrack).Progress();
           this.leftUses--;
 
           examinedPlayers.Add(TargetPlayer.PlayerId);

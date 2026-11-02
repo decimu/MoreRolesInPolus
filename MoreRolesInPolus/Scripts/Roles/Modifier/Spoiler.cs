@@ -12,7 +12,10 @@ public class Spoiler : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
   private const string overlayKey = "role.spoiler.overlay";
 
   private Spoiler()
-    : base("spoiler", "spoiler", new(180, 0, 0), []) { }
+    : base("spoiler", "spoiler", new(180, 0, 0), [])
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagBeginner);
+  }
 
   Image? DefinedAssignable.IconImage => iconImage;
   static readonly Image iconImage = NebulaAPI
@@ -20,6 +23,13 @@ public class Spoiler : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
     .AsImage()!;
 
   public static Spoiler MyRole = new Spoiler();
+
+  // 統計（役職のスポイラーと ID が重ならないように分ける）
+  static readonly GameStatsEntry StatsReveal = NebulaAPI.CreateStatsEntry(
+    "stats.spoilerModifier.reveal",
+    GameStatsCategory.Roles,
+    MyRole
+  );
 
   RuntimeModifier RuntimeAssignableGenerator<RuntimeModifier>.CreateInstance(
     GamePlayer player,
@@ -49,6 +59,7 @@ public class Spoiler : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
           p.IsAlive && p.Role.ExternalRecognitionRole == targetRole
         );
         roleMap[ev.Dead] = (targetRole, roleCount);
+        StatsReveal.Progress();
 
         killCount++;
 

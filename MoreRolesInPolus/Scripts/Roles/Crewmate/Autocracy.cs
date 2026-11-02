@@ -24,7 +24,10 @@ public class Autocracy
             RoleCategory.CrewmateRole
           ),
         ]
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagChaotic);
+  }
 
   Image? DefinedAssignable.IconImage => iconImage;
   static readonly Image iconImage = NebulaAPI
@@ -37,6 +40,9 @@ public class Autocracy
     new Ability(player, arguments.GetAsBool(0), arguments.GetAsBool(1));
 
   public static Autocracy MyRole = new();
+
+  // 統計（MyRole を関係する役職に使うので、MyRole より後で作る）
+  static readonly GameStatsEntry StatsMeeting = NebulaAPI.CreateStatsEntry("stats.autocracy.meeting", GameStatsCategory.Roles, MyRole);
 
   // 称号（MyRole を関係する役職に使うので、MyRole より後で登録する）
   private static readonly bool TitlesRegistered = RegisterTitles();
@@ -174,6 +180,7 @@ public class Autocracy
       if (!AmOwner)
         return;
 
+      StatsMeeting.Progress();
       AutocracyButton?.Break();
 
       // 反逆者が生存していると、独裁者は指定先ではなく自分自身に投票する（＝自分が処刑される）

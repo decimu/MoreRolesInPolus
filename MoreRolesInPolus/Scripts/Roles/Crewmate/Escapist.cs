@@ -25,7 +25,10 @@ public class Escapist
         EscapingVisionOption,
         HideFromAdminAndVitalsOption,
       ]
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagBeginner);
+  }
 
   Image? DefinedAssignable.IconImage => iconImage;
   static readonly Image iconImage = NebulaAPI
@@ -55,6 +58,10 @@ public class Escapist
     NebulaAPI.Configurations.Configuration("options.role.escapist.hideFromAdminAndVitals", true);
 
   public static readonly Escapist MyRole = new();
+
+  // 統計（MyRole を関係する役職に使うので、MyRole より後で作る）
+  static readonly GameStatsEntry StatsEscape = NebulaAPI.CreateStatsEntry("stats.escapist.escape", GameStatsCategory.Roles, MyRole);
+  static readonly GameStatsEntry StatsGuard = NebulaAPI.CreateStatsEntry("stats.escapist.guard", GameStatsCategory.Roles, MyRole);
 
   /// <summary>称号はプリプロセス中に登録する。MyRole を関係する役職に使うので、MyRole より後で初期化する</summary>
   private static readonly bool TitlesRegistered = RegisterTitles();
@@ -169,6 +176,8 @@ public class Escapist
         return;
       ability.EscapeTarget = NebulaGameManager.Instance?.GetPlayer(targetId);
       ability.LeftUses--;
+      if (ability.AmOwner)
+        StatsEscape.Progress();
     }
 
     [NebulaRPC]
@@ -318,6 +327,8 @@ public class Escapist
       if (ev.Player != MyPlayer || !IsEscaping)
         return;
       GainTitle("common2");
+      if (!IsUsurped)
+        StatsGuard.Progress();
       if (GuardedKillsToken != null)
         GuardedKillsToken.Value++;
     }

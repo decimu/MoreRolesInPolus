@@ -44,6 +44,13 @@ namespace MoreRolesInPolus.Scripts.Utils
         // NoS の入口を通さないので、会議の開始の知らせ（MeetingPreStartEvent）だけは自分で送る。
         // これがないと、投票欄のボタンの作り直しなど、会議の前に NoS がする準備が行われない
         Nebula.Patches.MeetingModRpc.RpcNoticeStartMeeting.Invoke((player.PlayerId, byte.MaxValue));
+        // 試合の経過の記録も NoS の入口でしか残らないので、緊急会議として残す
+        NebulaGameManager.Instance?.GameStatistics.RpcRecordEvent(
+          GameStatistics.EventVariation.EmergencyButton,
+          EventDetail.EmergencyButton,
+          player,
+          0
+        );
       }
     }
   }

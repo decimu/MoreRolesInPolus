@@ -17,6 +17,9 @@
 "options.role.anchor.cameraCoolDown" : "びっくり箱カメラクールダウン"
 "options.role.anchor.cameraDuration" : "びっくり箱カメラ使用時間"
 "options.role.anchor.numOfJacks" : "設置可能なびっくり箱の数"
+"gameAction.anchor.placement" : "びっくり箱の設置"
+"stats.anchor.place" : "びっくり箱を設置した回数"
+"stats.anchor.camera" : "潜望した回数"
 "button.label.place" : "設置"
 "button.label.camera" : "潜望"
 "button.label.left" : "左へ"
@@ -40,6 +43,8 @@
 "options.role.researcher.surveyDuration" : "調査・追跡にかかる時間"
 "options.role.researcher.surveyTime" : "遡及可能時間（調査モード時）"
 "options.role.researcher.maxSurvey" : "調査・追跡可能回数（共通）"
+"stats.researcher.survey" : "調査した回数"
+"stats.researcher.track" : "追跡した回数"
 "button.label.researcher.survey" : "調査"
 "button.label.researcher.track" : "追跡"
 "ui.action.researcher.switch" : "モード切替"
@@ -104,6 +109,7 @@
 "achievement.moreRolesInPolus.autocracy.challenge.flavor" : ""L'État, c'est moi." ―ルイ14世（とされる）"
 
 "options.role.autocracy.detail" : "独裁者は一度だけ<color=#ffd166>独裁会議</color>を発動できます。<br>タスク中なら会議を開き、会議中なら自分が投票する前に<color=#ff4d4d>処刑先を指定</color>できます。<br>独裁会議では独裁者だけが投票でき、<color=#ff4d4d>その日の処刑結果を強制</color>できます。"
+"stats.autocracy.meeting" : "独裁会議を開いた回数"
 
 ## Rebel - Crewmate(Madmate)
 "role.rebel.name" : "レブル"
@@ -145,6 +151,8 @@
 "options.role.escapist.canEscapeToSameTargetInARow" : "続けて同じ人物に逃げ込める"
 "options.role.escapist.escapingVision" : "逃げ込み中の視界"
 "options.role.escapist.hideFromAdminAndVitals" : "逃げ込み中はアドミンとバイタルに映らない"
+"stats.escapist.escape" : "逃げ込んだ回数"
+"stats.escapist.guard" : "逃げ込みでキルを防いだ回数"
 
 "achievement.moreRolesInPolus.escapist.common1.title" : "仮初の宿"
 "achievement.moreRolesInPolus.escapist.common1.goal" : "逃げ込んだあと、次の会議まで生き残る。"
@@ -188,6 +196,9 @@
 "options.role.matchGirl.noRefill" : "補充しない"
 "options.role.matchGirl.maxMatches" : "補充で持てるマッチの上限"
 "options.role.matchGirl.glowSize" : "停電中に光る範囲"
+"gameAction.matchGirl.light" : "マッチの点火"
+"stats.matchGirl.light" : "マッチを灯した回数"
+"stats.matchGirl.guard" : "マッチでキルを防いだ回数"
 
 "achievement.moreRolesInPolus.matchGirl.common1.title" : "一夜の灯"
 "achievement.moreRolesInPolus.matchGirl.common1.goal" : "マッチを灯したインポスターのキルを防ぐ。"
@@ -221,6 +232,8 @@
 "options.role.spoiler.detail" : "スポイラーはキルするとその人の役職が分かり、<br>その役職が残り何人か判別できます。<br>なお、判別された人数はその時の人数で、あとから変化しません。"
 "role.spoiler.overlay" : "残り%COUNT%人"
 "options.role.spoiler.canSeeRemainingRoles" : "キルした役職の残り人数が見える"
+"stats.spoiler.reveal" : "役職を暴いた回数"
+"stats.spoilerModifier.reveal" : "役職を暴いた回数"
 
 ##アキューサー neutral
 "teams.accuser" : "アキューサー"
@@ -252,6 +265,7 @@
 "options.role.barclaw.meetingDelay" : "会議が始まるまでの遅延"
 "options.role.barclaw.meetingDelayDispersion" : "会議が始まるまでの遅延のばらつき"
 "options.role.barclaw.allowGhostMeeting" : "死んでいても通報が入るか"
+"stats.barclaw.meeting" : "緊急会議を起こした回数"
 
 ### Common
 

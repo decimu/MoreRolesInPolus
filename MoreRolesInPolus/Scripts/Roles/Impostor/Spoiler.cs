@@ -14,7 +14,10 @@ public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, Define
       RoleCategory.ImpostorRole,
       NebulaTeams.ImpostorTeam,
       []
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagBeginner);
+  }
 
   Image? DefinedAssignable.IconImage => iconImage;
   static readonly Image iconImage = NebulaAPI
@@ -22,6 +25,9 @@ public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, Define
     .AsImage()!;
 
   public static readonly Spoiler MyRole = new();
+
+  // 統計（MyRole を関係する役職に使うので、MyRole より後で作る）
+  static readonly GameStatsEntry StatsReveal = NebulaAPI.CreateStatsEntry("stats.spoiler.reveal", GameStatsCategory.Roles, MyRole);
 
   AbilityAssignmentStatus DefinedRole.AssignmentStatus => AbilityAssignmentStatus.KillersSide;
   MultipleAssignmentType DefinedRole.MultipleAssignment => MultipleAssignmentType.Allowed;
@@ -55,6 +61,7 @@ public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, Define
           p.IsAlive && p.Role.ExternalRecognitionRole == targetRole
         );
         roleMap[ev.Dead] = (targetRole, roleCount);
+        StatsReveal.Progress();
 
         killCount++;
 

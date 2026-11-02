@@ -65,7 +65,10 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole, IAssignableDocument
         NumOfMissAllowedOption,
         DisableGuessAfterMissOption,
       ]
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagDifficult);
+  }
 
   Image? DefinedAssignable.IconImage => (Guesser.MyEvilRole as DefinedRole).IconImage;
 

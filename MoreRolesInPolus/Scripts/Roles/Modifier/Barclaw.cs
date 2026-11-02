@@ -18,7 +18,10 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
         meetingDelayDispersionOption,
         AllowGhostMeeting,
       ]
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagChaotic);
+  }
 
   private static readonly IntegerConfiguration numOfDeadRequired =
     NebulaAPI.Configurations.Configuration("options.role.barclaw.numOfDeadRequired", (1, 10), 2);
@@ -46,6 +49,9 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
   private static readonly BoolConfiguration AllowGhostMeeting =
     NebulaAPI.Configurations.Configuration("options.role.barclaw.allowGhostMeeting", false);
   public static Barclaw MyRole = new Barclaw();
+
+  // 統計（MyRole を関係する役職に使うので、MyRole より後で作る）
+  static readonly GameStatsEntry StatsMeeting = NebulaAPI.CreateStatsEntry("stats.barclaw.meeting", GameStatsCategory.Roles, MyRole);
 
   RuntimeModifier RuntimeAssignableGenerator<RuntimeModifier>.CreateInstance(
     GamePlayer player,
@@ -124,6 +130,7 @@ public class Barclaw : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
         yield break;
 
       CallMeetingHelper.CallMeeting(MyPlayer);
+      StatsMeeting.Progress();
     }
 
     [Local]

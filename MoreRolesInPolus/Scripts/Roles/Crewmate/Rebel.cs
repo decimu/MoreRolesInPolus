@@ -24,7 +24,10 @@ public class Rebel
       // 出現人数の設定は持たない（独裁者と一緒に狂人へ載せて割り当てる）。
       // 設定の入れ物は、役職一覧のカードに説明（options.role.rebel.detail）を出すために作る
       withAssignmentOption: false
-    ) { }
+    )
+  {
+    ConfigurationHolder?.AddTags(ConfigurationTags.TagDifficult);
+  }
 
   Citation? HasCitation.Citation => AddonCitations.JinroJudgement;
 
