@@ -11,7 +11,8 @@ public class Rebel
   : DefinedRoleTemplate,
     DefinedSingleAbilityRole<Rebel.Ability>,
     DefinedRole,
-    HasCitation
+    HasCitation,
+    IAssignableDocument
 {
   private Rebel()
     : base(
@@ -20,11 +21,17 @@ public class Rebel
       RoleCategory.CrewmateRole,
       NebulaTeams.CrewmateTeam,
       [],
-      withAssignmentOption: false,
-      withOptionHolder: false
+      // 出現人数の設定は持たない（独裁者と一緒に狂人へ載せて割り当てる）。
+      // 設定の入れ物は、役職一覧のカードに説明（options.role.rebel.detail）を出すために作る
+      withAssignmentOption: false
     ) { }
 
   Citation? HasCitation.Citation => AddonCitations.JinroJudgement;
+
+  // マッドレブルのヘルプには狂人のページと並んで出る。勝利条件などは狂人のページに任せ、能力の説明だけを書く
+  bool IAssignableDocument.HasTips => true;
+  bool IAssignableDocument.HasAbility => false;
+  bool IAssignableDocument.HasWinCondition => false;
 
   public Ability CreateAbility(GamePlayer player, int[] arguments) =>
     new Ability(player, arguments.GetAsBool(0));

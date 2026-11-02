@@ -40,16 +40,6 @@ public static class MRIPModUpdater
   public static bool MaybeNoMorePages { get; private set; } = false;
 
   /// <summary>
-  /// キャッシュをリセット
-  /// </summary>
-  public static void ResetCache()
-  {
-    _cache = null;
-    NextPage = 1;
-    MaybeNoMorePages = false;
-  }
-
-  /// <summary>
   /// アドオン読み込み直後に古いMRIPファイルを削除
   /// </summary>
   public static void CleanupOldAddonFiles()
@@ -384,7 +374,8 @@ public static class MRIPModUpdater
 
     private static void ShowMessage(string title, string message)
     {
-      int lineCount = message.Split('\n').Length;
+      // 翻訳ファイルの文は <br> で、コードの中の文は \n で改行している
+      int lineCount = message.Replace("<br>", "\n").Split('\n').Length;
       float height = Math.Max(2.5f, 1.5f + lineCount * 0.25f);
 
       MetaScreen window = MetaScreen.GenerateWindow(

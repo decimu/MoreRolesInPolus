@@ -7,7 +7,7 @@ Nebula on the Ship 用アドオン MOD。
 
 ---
 
-## Imposter
+## Impostor
 
 ### 潜望者
 
@@ -88,6 +88,16 @@ MoreRolesInPolus/
 └── .github/workflows/           # GitHub Actions（自動リリース）
 ```
 
+### 必要なもの
+
+| もの | 理由 |
+|------|------|
+| **.NET 10 SDK** | プロジェクトが `net10.0` 向けのため。9 以下ではビルドもエディタの補完も動かない（`winget install Microsoft.DotNet.SDK.10`） |
+| **C# の拡張機能** | VS Code は Microsoft の「C#」、Cursor は Cursor 公式の「C#」（`anysphere.csharp`）。Cursor では C# Dev Kit は使えない |
+| **CSharpier の拡張機能** | 保存時の整形に使う（`.vscode/settings.json` で設定済み） |
+
+> ℹ️ エディタの自動保存（`files.autoSave: afterDelay`）では保存時の整形が動きません。`Ctrl+S` で保存すると整形されます。
+
 ### 初期セットアップ（必須）
 
 #### 1. リポジトリのクローン
@@ -156,6 +166,12 @@ Visual Studio・VS Code のどちらでも `Ctrl+Shift+B` でビルドできま�
 - 環境変数 `AmongUs` が正しく設定されているか確認
 - Visual Studio / VS Code を**再起動**（環境変数の変更を反映）
 
+#### VS Code / Cursor で補完が出ない
+
+- `dotnet --list-sdks` に 10.x があるか確認（なければ .NET 10 SDK を入れる）
+- フォルダに `MoreRolesInPolus.sln` と `Nebula-Public/Nebula.sln` の 2 つがあると、C# 拡張はどちらも読み込みません。`.vscode/settings.json` の `dotnet.defaultSolution` で `MoreRolesInPolus.sln` を指定済みです
+- 直らないときは、コマンドパレット →「Developer: Reload Window」。それでもだめなら「出力」タブの「C#」のログを見る
+
 #### API 参照エラー（`GetRoomName` など）
 
 NebulaAPI（NuGet）と Nebula.dll（ゲーム内）のバージョンが異なる場合があります。
@@ -223,7 +239,7 @@ git push origin feature/researcher
 | **バージョン** | 日付から自動採番 | `addon.meta` の `Version` |
 | **条件** | `MoreRolesInPolus/**` 変更時のみ | `MoreRolesInPolus/**` 変更時のみ |
 | **タグ形式** | `s,Snapshot_25.12.30a` | `v,v1.0.0` |
-| **リリース名** | `MoreRolesInPolus-Snapshot_25.12.30a` | `MoreRolesInPolus-v1.0.0` |
+| **リリース名** | `MoreRolesInPolus Snapshot 25.12.30a` | `MoreRolesInPolus ver 1.0.0` |
 | **ファイル名** | `MoreRolesInPolus-Snapshot_25.12.30a.zip` | `MoreRolesInPolus-v1.0.0.zip` |
 | **Latest** | ❌ No | ✅ Yes |
 | **Pre-release** | ✅ Yes | ❌ No |
@@ -235,6 +251,15 @@ git push origin feature/researcher
 > ℹ️ NoS のマーケットプレイスは Latest リリースだけを自動配信します。  
 > Snapshot は Pre-release なので一般プレイヤーには届かず、MRIP のバージョン画面から選んでインストールします。
 
+#### リリース本文（リリースノート）
+
+本家と同じく、「〜しました。」の 1 行だけを書きます。本文はゲーム内のバージョン一覧にもそのまま表示されます。
+
+- 前回のリリース以降で、`MoreRolesInPolus/` に触れたコミットの件名の末尾に「しました。」を付けてつなげます
+- NoSDevKit・`.vscode`・`.github` などだけを変えたコミットは載りません。開発用の変更は、アドオンの変更とは別のコミットにしてください
+- `v0.4.1` のようなバージョン番号だけの件名は載りません
+- 件名は「〜を追加」「〜を修正」の形で書くと、自然な文になります（例: 「アキューサーに勝機を追加」→「アキューサーに勝機を追加しました。」）
+
 #### Snapshot（開発版）リリース
 
 **自動で作成されます：**
@@ -243,13 +268,12 @@ git push origin feature/researcher
 2. `develop` ブランチにpush（直接 or PRマージ）
 3. 自動で `s,Snapshot_25.12.30a` タグ + Pre-release 作成
    - 同日の2回目以降は `b`, `c`, `d`... とサフィックス付与
-   - 変更内容には前回の Snapshot 以降のコミットがすべて載ります
 
 **例:**
 ```bash
-# Coordinator.cs を編集
-git add MoreRolesInPolus/Scripts/Roles/Imposter/Coordinator.cs
-git commit -m "feat: update Coordinator ability"
+# Accuser.cs を編集
+git add MoreRolesInPolus/Scripts/Roles/Neutral/Accuser.cs
+git commit -m "アキューサーに勝機を追加"
 git push origin develop
 
 # → 自動で s,Snapshot_25.12.30a リリース作成

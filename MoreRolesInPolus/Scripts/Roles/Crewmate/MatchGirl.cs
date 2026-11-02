@@ -118,7 +118,7 @@ public class MatchGirl
 
     ModAbilityButton? LightButton;
 
-    /// <summary>停電中に、マッチを灯された人の周りに置く光</summary>
+    /// <summary>停電中に、マッチを灯された人の周りに置く光。能力がなくなると NoS が光も消す</summary>
     readonly Dictionary<byte, SpriteRenderer> Glows = [];
 
     /// <summary>燐寸の魔女: 1 試合でマッチでキルを防いだ回数</summary>
@@ -251,6 +251,7 @@ public class MatchGirl
         {
           glow = AmongUsUtil.GenerateCustomLight(player.Position.ToUnityVector());
           glow.transform.localScale *= GlowSizeOption.GetValue();
+          this.BindGameObject(glow.gameObject);
           Glows[id] = glow;
         }
         var pos = player.Position.ToUnityVector();
@@ -413,7 +414,5 @@ public class MatchGirl
           ((DefinedAssignable)MyRole).Color
         );
     }
-
-    void OnGameEnd(GameEndEvent ev) => ClearGlows();
   }
 }

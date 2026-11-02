@@ -41,6 +41,9 @@ namespace MoreRolesInPolus.Scripts.Utils
         }
         DestroyableSingleton<HudManager>.Instance.OpenMeetingRoom(player);
         player.RpcStartMeeting(null);
+        // NoS の入口を通さないので、会議の開始の知らせ（MeetingPreStartEvent）だけは自分で送る。
+        // これがないと、投票欄のボタンの作り直しなど、会議の前に NoS がする準備が行われない
+        Nebula.Patches.MeetingModRpc.RpcNoticeStartMeeting.Invoke((player.PlayerId, byte.MaxValue));
       }
     }
   }

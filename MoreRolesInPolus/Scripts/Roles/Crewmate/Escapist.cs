@@ -96,9 +96,6 @@ public class Escapist
   static readonly CommunicableTextTag KilledTogetherState =
     NebulaAPI.Preprocessor!.RegisterCommunicableText("state.escapist.killedTogether");
 
-  /// <summary>逃げ込み先を選んでいないことを表す PlayerId</summary>
-  private const byte NoTarget = byte.MaxValue;
-
   public override Ability CreateAbility(GamePlayer player, int[] arguments)
   {
     int max = NumOfEscapesOption.GetValue();

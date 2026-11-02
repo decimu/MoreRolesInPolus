@@ -1,0 +1,7 @@
+# 改行コードを LF に固定する（core.autocrlf=true の環境でも、作業フォルダ側を CRLF に変えない）
+# 翻訳ファイルが CR CR LF になったことがあるため
+* text=auto eol=lf
+
+*.png binary
+*.dll binary
+*.zip binary

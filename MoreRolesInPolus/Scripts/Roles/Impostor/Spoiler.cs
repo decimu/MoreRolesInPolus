@@ -1,4 +1,4 @@
-﻿namespace MoreRolesInPolus.Roles.Imposter;
+﻿namespace MoreRolesInPolus.Roles.Impostor;
 
 //spoiler キルした相手の役職を確認できるインポスター役職
 //
@@ -27,16 +27,18 @@ public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, Define
   MultipleAssignmentType DefinedRole.MultipleAssignment => MultipleAssignmentType.Allowed;
 
   public override Ability CreateAbility(GamePlayer player, int[] arguments) =>
-    new Ability(player, arguments.Length > 0 ? arguments[0] == 1 : false);
+    new Ability(player, arguments.GetAsBool(0));
 
   //オプション：残りのその役職の人数も表示するか
   private static readonly BoolConfiguration CanSeeRemainingRoles =
-    NebulaAPI.Configurations.Configuration("options.role.spoiler.CanSeeRemainingRoles", true);
+    NebulaAPI.Configurations.Configuration("options.role.spoiler.canSeeRemainingRoles", true);
 
   public class Ability : AbstractPlayerUsurpableAbility, IPlayerAbility
   {
     public Ability(Virial.Game.Player player, bool isUsurped)
       : base(player, isUsurped) { }
+
+    int[] IPlayerAbility.AbilityArguments => [IsUsurped.AsInt()];
 
     Dictionary<Player, (DefinedRole role, int roleCount)> roleMap = [];
 
@@ -46,7 +48,7 @@ public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, Define
     [OnlyMyPlayer]
     void OnKillPlayer(PlayerKillPlayerEvent ev)
     {
-      if (AmOwner && ev.Player != ev.Dead)
+      if (AmOwner && !IsUsurped && ev.Player != ev.Dead)
       {
         var targetRole = ev.Dead.Role.ExternalRecognitionRole;
         int roleCount = Player.AllPlayers.Count(p =>
@@ -83,7 +85,7 @@ public class Spoiler : DefinedSingleAbilityRoleTemplate<Spoiler.Ability>, Define
 
     void ReflectRoleName(PlayerSetFakeRoleNameEvent ev)
     {
-      if (roleMap.ContainsKey(ev.Player))
+      if (!IsUsurped && roleMap.ContainsKey(ev.Player))
       {
         var targetRole = roleMap[ev.Player];
         ev.Alternate(

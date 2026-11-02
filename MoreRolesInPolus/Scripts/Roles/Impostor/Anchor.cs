@@ -1,7 +1,7 @@
 ﻿using global::MoreRolesInPolus.Scripts.Core;
 using Virial.Runtime;
 
-namespace MoreRolesInPolus.Roles.Imposter
+namespace MoreRolesInPolus.Roles.Impostor
 {
   [NebulaPreprocess(PreprocessPhase.PostFixStructure)]
   public static class HarmonyPatchSetUp
@@ -45,7 +45,11 @@ namespace MoreRolesInPolus.Roles.Imposter
   /// Anchorロールの情報を定義するクラスです。
   /// </summary>
   [NebulaRPCHolder]
-  public class Anchor : DefinedSingleAbilityRoleTemplate<Anchor.Ability>, DefinedRole, HasCitation
+  public class Anchor
+    : DefinedSingleAbilityRoleTemplate<Anchor.Ability>,
+      DefinedRole,
+      HasCitation,
+      IAssignableDocument
   {
     /// <summary>
     /// Anchorロール情報のコンストラクタです。ここで役職の内部名、色、割り当てのカテゴリ、所属陣営、およびオプションを設定します。
@@ -63,6 +67,26 @@ namespace MoreRolesInPolus.Roles.Imposter
     }
 
     Citation? HasCitation.Citation => Citations.TheOtherRoles;
+
+    bool IAssignableDocument.HasTips => true;
+    bool IAssignableDocument.HasAbility => true;
+
+    IEnumerable<AssignableDocumentImage> IAssignableDocument.GetDocumentImages()
+    {
+      yield return new(documentPlaceSprite, "role.anchor.ability.place");
+      yield return new(documentCameraSprite, "role.anchor.ability.camera");
+    }
+
+    IEnumerable<AssignableDocumentReplacement> IAssignableDocument.GetDocumentReplacements()
+    {
+      yield return new("%NUM%", numOfJacksOption.GetValue().ToString());
+    }
+
+    // 役職のヘルプに出すボタンの画像（設置もカメラも同じびっくり箱の絵）
+    static readonly Image documentPlaceSprite = NebulaAPI
+      .AddonAsset.GetResource("PlaceJackInTheBoxButton.png")!
+      .AsImage(115f)!;
+    static readonly Image documentCameraSprite = documentPlaceSprite;
 
     Image? DefinedAssignable.IconImage => iconImage;
     static readonly Image iconImage = NebulaAPI
@@ -466,11 +490,6 @@ namespace MoreRolesInPolus.Roles.Imposter
           GameObject? cameraIndicator = null;
           TMPro.TextMeshPro? indicatorText = null;
 
-          /// <summary>
-          /// 元のShadowQuadの状態を保存
-          /// </summary>
-          bool originalShadowQuadActive = true;
-
           var cameraButton = NebulaAPI
             .Modules.EffectButton(
               this,
@@ -531,13 +550,7 @@ namespace MoreRolesInPolus.Roles.Imposter
             PlayerControl.LocalPlayer.moveable = false;
             PlayerControl.LocalPlayer.NetTransform.Halt();
 
-            // 視界の壁判定を無効化（影を非表示にする）
-            var shadowCollab = UnityEngine.Object.FindObjectOfType<ShadowCollab>();
-            if (shadowCollab != null && shadowCollab.ShadowQuad != null)
-            {
-              originalShadowQuadActive = shadowCollab.ShadowQuad.gameObject.activeSelf;
-              shadowCollab.ShadowQuad.gameObject.SetActive(false);
-            }
+            // 壁を無視した視界は EyesightIgnoreWalls が、視界の光をカメラの先へ動かすのは NoS がやってくれる
 
             // カメラインジケーターを作成
             CreateCameraIndicator();
@@ -560,13 +573,6 @@ namespace MoreRolesInPolus.Roles.Imposter
 
             // カメラをプレイヤーに戻す
             AmongUsUtil.SetCamTarget();
-
-            // 視界の壁判定を元に戻す（影を再表示）
-            var shadowCollab = UnityEngine.Object.FindObjectOfType<ShadowCollab>();
-            if (shadowCollab != null && shadowCollab.ShadowQuad != null)
-            {
-              shadowCollab.ShadowQuad.gameObject.SetActive(originalShadowQuadActive);
-            }
 
             // カメラインジケーターを破棄
             DestroyCameraIndicator();
@@ -624,7 +630,8 @@ namespace MoreRolesInPolus.Roles.Imposter
             helpObj.layer = LayerMask.NameToLayer("UI");
             helpObj.transform.SetParent(cameraIndicator.transform, false);
             var helpText = helpObj.AddComponent<TMPro.TextMeshPro>();
-            helpText.text = "ESC:Exit";
+            // ESC はゲームのメニューも開いてしまうので、カメラのボタンをもう一度押して戻る
+            helpText.text = Language.Translate("role.anchor.ui.cameraHelp");
             helpText.fontSize = 1.5f;
             helpText.alignment = TextAlignmentOptions.TopLeft;
             helpText.color = new Virial.Color(0.8f, 0.8f, 0.8f, 0.8f).ToUnityColor();
@@ -725,25 +732,6 @@ namespace MoreRolesInPolus.Roles.Imposter
 
               // プレイヤーの移動を継続的に停止
               PlayerControl.LocalPlayer.moveable = false;
-
-              // lightSourceをカメラ位置に追従させる（毎フレーム）
-              if (PlayerControl.LocalPlayer.lightSource != null)
-              {
-                var camPos = Camera.main.transform.position;
-                PlayerControl.LocalPlayer.lightSource.transform.position =
-                  new Virial.Compat.Vector3(
-                    camPos.x,
-                    camPos.y,
-                    PlayerControl.LocalPlayer.lightSource.transform.position.z
-                  );
-              }
-
-              // ESCキーでカメラモード終了
-              if (Input.GetKeyDown(KeyCode.Escape))
-              {
-                EndCameraMode();
-                return;
-              }
             },
             this
           );

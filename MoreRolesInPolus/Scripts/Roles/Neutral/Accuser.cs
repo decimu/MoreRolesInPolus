@@ -23,12 +23,12 @@ internal class AccuserTeamInfo
 // 会議中以外暇な役職になってしまってるから仕事を与えたい
 // 今考えてるのとしては何かをしないとゲッサーの玉をゲットできないというもの
 // 例えば生きてる人全員に一回触れる(クールタイムなどはなしただ触れるだけもしくはクリックするだけ)
-internal class Accuser : DefinedRoleTemplate, DefinedRole
+internal class Accuser : DefinedRoleTemplate, DefinedRole, IAssignableDocument
 {
   // 何回推測成功したら勝ちか
   private static IntegerConfiguration NumOfGuessToWinOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.accuser.NumOfGuessToWinOption",
+      "options.role.accuser.numOfGuessToWin",
       (1, 10),
       2
     );
@@ -68,9 +68,29 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
     ) { }
 
   Image? DefinedAssignable.IconImage => (Guesser.MyEvilRole as DefinedRole).IconImage;
-  private static readonly Image researchSprite = NebulaAPI
-    .AddonAsset.GetResource(string.Format("Crewmate/Researcher/ResearchButton.png"))!
-    .AsImage(115f)!;
+
+  // 推測は会議中の投票欄で行うので、本家のゲッサーと同じく能力の画像は出さず、ヒントで説明する
+  bool IAssignableDocument.HasWinCondition => true;
+  bool IAssignableDocument.HasTips => true;
+
+  IEnumerable<AssignableDocumentReplacement> IAssignableDocument.GetDocumentReplacements()
+  {
+    yield return new("%NUM%", NumOfGuessToWinOption.GetValue().ToString());
+    yield return new("%PER%", NumOfGuessPerMeetingOption.GetValue().ToString());
+    yield return new("%MISS%", NumOfMissAllowedOption.GetValue().ToString());
+  }
+
+  // 推測を外して死んだとき、誰を何の役職だと推測したかを死因に添える（NoS のゲッサーと同じ）
+  private record MisguessedExtraDeadInfo(GamePlayer To, DefinedRole Role)
+    : GamePlayer.ExtraDeadInfo(PlayerStates.Misguessed)
+  {
+    public override string ToStateText() => To.PlayerName + " as " + Role.DisplayColoredName;
+  }
+
+  private static readonly RemoteProcess<(GamePlayer guesser, GamePlayer to, DefinedRole role)> RpcShareMisguess = new(
+    "AccuserShareMisguess",
+    (message, _) => message.guesser.PlayerStateExtraInfo = new MisguessedExtraDeadInfo(message.to, message.role)
+  );
 
   RuntimeRole RuntimeAssignableGenerator<RuntimeRole>.CreateInstance(
     GamePlayer player,
@@ -170,6 +190,11 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
                       );
                       leftGuess--;
                       leftGuessPerMeeting--;
+                      ModSingleton<IWinningOpportunity>.Instance.RpcSetOpportunity(
+                        AccuserTeamInfo.MyTeam!,
+                        0.85f - (leftGuess - 1) * 0.2f,
+                        false
+                      );
                     }
                   }
                   else
@@ -183,6 +208,7 @@ internal class Accuser : DefinedRoleTemplate, DefinedRole
                         KillParameter.MeetingKill,
                         KillCondition.BothAlive
                       );
+                      RpcShareMisguess.Invoke((NebulaAPI.CurrentGame!.LocalPlayer, p, r));
                     }
                     else
                     {

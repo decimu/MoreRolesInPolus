@@ -39,14 +39,14 @@ public class Researcher
     );
   private static readonly FloatConfiguration SurveyTimeOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.researcher.surveytime",
+      "options.role.researcher.surveyTime",
       (10f, 60f, 2.5f),
       30f,
       FloatConfigurationDecorator.Second
     );
   private static readonly IntegerConfiguration MaxSurveyOption =
     NebulaAPI.Configurations.Configuration(
-      "options.role.researcher.maxsurvey",
+      "options.role.researcher.maxSurvey",
       (0, 10, 1),
       5,
       null,
@@ -162,9 +162,15 @@ public class Researcher
         }
         float elapsedTime = to - action.Time;
         int roundedElapsedTime = (int)MathF.Round(elapsedTime, MidpointRounding.AwayFromZero);
-        result.AppendLine($"{roundedElapsedTime}秒前に" + action.Text);
+        result.AppendLine(
+          Language
+            .Translate("role.researcher.log.ago")
+            .Replace("%SEC%", roundedElapsedTime.ToString())
+            .Replace("%ACTION%", action.Text)
+        );
       }
-      return result.ToString();
+      // AppendLine は最後の行にも改行を付けるので、会議の表示で空の行が残らないように落とす
+      return result.ToString().TrimEnd();
     }
 
     public Ability(GamePlayer player, bool isUsurped, int leftUses)
@@ -256,7 +262,9 @@ public class Researcher
               examineTime - SurveyTimeOption.GetValue(),
               examineTime
             );
-            InthisturnResult.Add(new(examineTime, TargetPlayer, historyText, "調査モード"));
+            InthisturnResult.Add(
+              new(examineTime, TargetPlayer, historyText, Language.Translate("role.researcher.ui.surveyMode"))
+            );
           }
           else
           {
@@ -349,7 +357,9 @@ public class Researcher
 
         if (lastPlayerRooms[id] != roomResult)
         {
-          allActions.Add(new(Time.time, gplayer, $"{roomResult}に入ったようだ..."));
+          allActions.Add(
+            new(Time.time, gplayer, Language.Translate("role.researcher.log.enterRoom").Replace("%ROOM%", roomResult))
+          );
           lastPlayerRooms[id] = roomResult;
         }
       }
@@ -359,7 +369,7 @@ public class Researcher
     [Local]
     void OnEnterVent(PlayerVentEnterEvent ev)
     {
-      allActions.Add(new(Time.time, ev.Player, "ベントに入ったようだ..."));
+      allActions.Add(new(Time.time, ev.Player, Language.Translate("role.researcher.log.enterVent")));
     }
 
     //アクションを起こした
@@ -368,15 +378,15 @@ public class Researcher
     {
       if (ev.ActionType.IsPlacementAction == true)
       {
-        allActions.Add(new(Time.time, ev.Player, "何かを設置したようだ..."));
+        allActions.Add(new(Time.time, ev.Player, Language.Translate("role.researcher.log.place")));
       }
       else if (ev.ActionType.IsPhysicalAction == true)
       {
-        allActions.Add(new(Time.time, ev.Player, "状態を変化させたようだ..."));
+        allActions.Add(new(Time.time, ev.Player, Language.Translate("role.researcher.log.physical")));
       }
       else
       {
-        allActions.Add(new(Time.time, ev.Player, "アクションを起こした！"));
+        allActions.Add(new(Time.time, ev.Player, Language.Translate("role.researcher.log.action")));
       }
     }
 
@@ -384,7 +394,7 @@ public class Researcher
     [Local]
     void OnPlayerMurdered(PlayerKillPlayerEvent ev)
     {
-      allActions.Add(new(Time.time, ev.Dead, "何らかの手段によって殺害された"));
+      allActions.Add(new(Time.time, ev.Dead, Language.Translate("role.researcher.log.killed")));
     }
 
     //ドアを開けた
@@ -393,7 +403,10 @@ public class Researcher
     {
       // ドアは部屋の境目にあり、位置から部屋を調べると「部屋外」になるので、ドア自身が持つ部屋を使う
       var room = AmongUsUtil.ToDisplayString(ev.Door.VanillaObject.Room);
-      allActions.Add(new(Time.time, ev.Player, string.IsNullOrEmpty(room) ? "どこかのドアを開けたようだ..." : $"{room}のドアを開けたようだ..."));
+      var text = string.IsNullOrEmpty(room)
+        ? Language.Translate("role.researcher.log.openDoorSomewhere")
+        : Language.Translate("role.researcher.log.openDoor").Replace("%ROOM%", room);
+      allActions.Add(new(Time.time, ev.Player, text));
     }
 
     void GainTitle(string key)
@@ -448,7 +461,9 @@ public class Researcher
         var now = Time.time;
         string historyText = GetHistory(logger.Player, logger.StartTime, now);
         // Timeには監視開始時刻を入れる。プレフィックスは "T" (Track)
-        InthisturnResult.Add(new(logger.StartTime, logger.Player, historyText, "追跡モード"));
+        InthisturnResult.Add(
+          new(logger.StartTime, logger.Player, historyText, Language.Translate("role.researcher.ui.trackMode"))
+        );
       }
       activeLoggers.Clear();
 
@@ -459,7 +474,7 @@ public class Researcher
         float elapsedTime = now - history.Time;
         int roundedElapsedTime = (int)MathF.Round(elapsedTime, MidpointRounding.AwayFromZero);
 
-        var textContent = history.Content == "" ? "何もしていないようだ。" : history.Content;
+        var textContent = history.Content == "" ? Language.Translate("role.researcher.log.nothing") : history.Content;
 
         var playerinfo = NebulaAPI.GUI.VerticalHolder(
           Virial.Media.GUIAlignment.Left,
@@ -493,7 +508,12 @@ public class Researcher
             new NoSGUIText(
               GUIAlignment.Right,
               AttributeAsset.OverlayTitle,
-              NebulaAPI.GUI.RawTextComponent($"{history.Prefix} {roundedElapsedTime}秒前")
+              NebulaAPI.GUI.RawTextComponent(
+                Language
+                  .Translate("role.researcher.ui.elapsed")
+                  .Replace("%MODE%", history.Prefix)
+                  .Replace("%SEC%", roundedElapsedTime.ToString())
+              )
             )
           ),
           playerinfo
@@ -523,13 +543,13 @@ public class Researcher
 
       if (activeLoggers.Any(l => l.Player.PlayerId == ev.Player.PlayerId))
       {
-        ev.Alternate("調査中");
+        ev.Alternate(Language.Translate("role.researcher.ui.tracking"));
         return;
       }
 
       if (InthisturnResult.Any(h => h.Player.PlayerId == ev.Player.PlayerId))
       {
-        ev.Alternate("調査完了");
+        ev.Alternate(Language.Translate("role.researcher.ui.surveyed"));
         return;
       }
     }

@@ -71,7 +71,7 @@ public class Spoiler : DefinedAllocatableModifierTemplate, DefinedAllocatableMod
           ev.Player.Position,
           () => !Isalive(),
           Isalive
-        ); //�\�����邽�тɃJ�E���^�[���₷�@���ꂪ���Ԗڂ��͊o����@
+        ); //表示するたびにカウンター増やす　これが何番目かは覚える
       }
     }
 
