@@ -235,38 +235,6 @@
 "stats.spoiler.reveal" : "役職を暴いた回数"
 "stats.spoilerModifier.reveal" : "役職を暴いた回数"
 
-##アキューサー neutral
-"teams.accuser" : "アキューサー"
-"role.accuser.name" : "アキューサー"
-"role.accuser.short" : "アキュ"
-"role.accuser.blurb" : "すべてを見透かせ"
-"role.accuser.doc" : "会議中に役職を見抜き、推測を当てて勝利を目指す第三陣営です。"
-"role.accuser.winCond" : "推測を<var>%NUM%</var>回成功させる。"
-"role.accuser.tips" : "・会議中、投票欄のボタンから相手の役職を推測できます。当たると、その相手はキルされます。<br>・1回の会議で推測できるのは<var>%PER%</var>回までです。<br>・推測は<var>%MISS%</var>回まで外せます。使い切ったあとに外すと、自分が死亡します。<br>・最後の1回を当てた瞬間に勝利します。あと1回のときほど慎重に。"
-"options.role.accuser.detail" : "アキューサーは会議中に役職を推測し、<b>決められた回数当てると単独で勝利</b>する第三陣営です。<br>推測を外しすぎると、自分が死亡します。"
-"options.role.accuser.numOfGuessToWin" : "勝利に必要な推測成功回数"
-"options.role.accuser.numOfGuessPerMeeting" : "1回の会議で推測できる回数"
-"options.role.accuser.numOfMissAllowed" : "許容ミス回数"
-"options.role.accuser.disableGuessAfterMiss" : "外した会議ではそれ以上推測できない"
-"role.accuser.leftMiss" : "残りミス可能回数"
-"stats.accuser.guess" : "推測回数"
-"end.accuser" : "アキューサー%EXTRA%勝利"
-
-##ばーくろー modifier for Crewmate
-"role.barclaw.name" : "ばーくろー"
-"role.barclaw.short" : "ば"
-"role.barclaw.generalBlurb" : "死が重なれば、沈黙は破られる"
-"role.barclaw.doc" : "ばーくろーは死人が一定数出ると<br>勝手に緊急会議を始めてしまうクルー専用モディファイアです。"
-"options.role.barclaw.detail" : "ばーくろーは死人が一定数出ると<br>勝手に緊急会議を始めてしまうクルー専用モディファイアです。"
-"options.role.barclaw.numOfDeadRequired" : "緊急会議が発動する死体の数"
-"options.role.barclaw.numOfMaxButton" : "緊急会議が発動する最大回数"
-"options.role.barclaw.enableAfterSecondTurn" : "2回目のターン以降に有効化"
-"options.role.barclaw.showMeetingInFlash" : "会議が入る前(死体が一定数出た時のフラッシュ表示)"
-"options.role.barclaw.meetingDelay" : "会議が始まるまでの遅延"
-"options.role.barclaw.meetingDelayDispersion" : "会議が始まるまでの遅延のばらつき"
-"options.role.barclaw.allowGhostMeeting" : "死んでいても通報が入るか"
-"stats.barclaw.meeting" : "緊急会議を起こした回数"
-
 ### Common
 
 ## Settings

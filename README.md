@@ -49,25 +49,12 @@ Nebula on the Ship 用アドオン MOD。
 
 ---
 
-## Neutral
-
-### アキューサー
-
-他役職を **一定数推測** することで勝利できます。
-
----
-
 ## Modifier
 
 ### スポイラー
 
 インポスター役職「スポイラー」の  
 **モディファイア版** です。
-
-### ばーくろー
-
-死人が一定数出ると、勝手に **緊急会議** を始めてしまう  
-クルー専用モディファイアです。
 
 ---
 
@@ -258,7 +245,7 @@ git push origin feature/researcher
 - 前回のリリース以降で、`MoreRolesInPolus/` に触れたコミットの件名の末尾に「しました。」を付けてつなげます
 - NoSDevKit・`.vscode`・`.github` などだけを変えたコミットは載りません。開発用の変更は、アドオンの変更とは別のコミットにしてください
 - `v0.4.1` のようなバージョン番号だけの件名は載りません
-- 件名は「〜を追加」「〜を修正」の形で書くと、自然な文になります（例: 「アキューサーに勝機を追加」→「アキューサーに勝機を追加しました。」）
+- 件名は「〜を追加」「〜を修正」の形で書くと、自然な文になります（例: 「リサーチャーの記録を修正」→「リサーチャーの記録を修正しました。」）
 
 #### Snapshot（開発版）リリース
 
@@ -271,9 +258,9 @@ git push origin feature/researcher
 
 **例:**
 ```bash
-# Accuser.cs を編集
-git add MoreRolesInPolus/Scripts/Roles/Neutral/Accuser.cs
-git commit -m "アキューサーに勝機を追加"
+# Researcher.cs を編集
+git add MoreRolesInPolus/Scripts/Roles/Crewmate/Researcher.cs
+git commit -m "リサーチャーの記録を修正"
 git push origin develop
 
 # → 自動で s,Snapshot_25.12.30a リリース作成
